@@ -1,0 +1,1271 @@
+/* src/index.css */
+/* ─────────────────────────────────────────────────────────────────────────────
+   Tailwind base + shared component layer
+   All BEM utility classes previously hand-rolled are replaced here as
+   @layer components so Tailwind's purge still removes unused classes.
+───────────────────────────────────────────────────────────────────────────── */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Google Fonts ─────────────────────────────────────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+/* ── Base resets ──────────────────────────────────────────────────────────── */
+@layer base {
+  *, *::before, *::after { box-sizing: border-box; }
+
+  html { -webkit-tap-highlight-color: transparent; }
+
+  body {
+    @apply bg-slate-50 text-slate-800 font-sans antialiased;
+  }
+
+  h1, h2, h3, h4 { @apply font-semibold leading-tight; }
+
+  a { @apply text-brand-600 hover:text-brand-700 transition-colors; }
+
+  input, select, textarea {
+    @apply w-full rounded-lg border border-slate-300 px-3 py-2 text-sm
+           bg-white text-slate-800 outline-none
+           focus:ring-2 focus:ring-brand-500 focus:border-brand-500
+           placeholder:text-slate-400 transition;
+  }
+
+  input[type="time"]   { @apply font-mono; }
+  input[type="number"] { @apply font-mono; }
+  input[readonly]      { @apply bg-slate-100 cursor-default; }
+}
+
+/* ── Reusable component utilities ─────────────────────────────────────────── */
+@layer components {
+
+  /* ── Buttons ────────────────────────────────────────────────────────── */
+  .btn {
+    @apply inline-flex items-center justify-center gap-1.5 font-medium
+           rounded-lg px-4 py-2 text-sm transition-all duration-150
+           disabled:opacity-50 disabled:pointer-events-none focus-visible:outline-none
+           focus-visible:ring-2 focus-visible:ring-offset-2;
+  }
+  .btn--primary {
+    @apply bg-brand-600 text-white hover:bg-brand-700
+           focus-visible:ring-brand-500;
+  }
+  .btn--ghost {
+    @apply bg-transparent text-slate-600 border border-slate-300
+           hover:bg-slate-100 focus-visible:ring-slate-400;
+  }
+  .btn--danger {
+    @apply bg-red-600 text-white hover:bg-red-700 focus-visible:ring-red-500;
+  }
+  .btn--success {
+    @apply bg-emerald-600 text-white hover:bg-emerald-700 focus-visible:ring-emerald-500;
+  }
+  .btn--sm   { @apply px-3 py-1.5 text-xs; }
+  .btn--full { @apply w-full; }
+
+  /* ── Badges ─────────────────────────────────────────────────────────── */
+  .badge {
+    @apply inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium;
+  }
+  .badge--success  { @apply bg-emerald-100 text-emerald-800; }
+  .badge--warning  { @apply bg-amber-100   text-amber-800;   }
+  .badge--danger   { @apply bg-red-100     text-red-800;     }
+  .badge--info     { @apply bg-sky-100     text-sky-800;     }
+  .badge--muted    { @apply bg-slate-100   text-slate-500;   }
+  .badge--neutral  { @apply bg-slate-100   text-slate-700;   }
+  .badge--critical { @apply bg-rose-200    text-rose-900;    }
+  .badge--role     { @apply bg-violet-100  text-violet-800;  }
+  .badge--type     { @apply bg-indigo-100  text-indigo-800;  }
+  .badge--category { @apply bg-teal-100    text-teal-800;    }
+
+  /* ── Form groups ─────────────────────────────────────────────────────── */
+  .form-group { @apply flex flex-col gap-1; }
+  .form-group label { @apply text-sm font-medium text-slate-700; }
+  .form-group--error input,
+  .form-group--error select,
+  .form-group--error textarea {
+    @apply border-red-400 focus:ring-red-500 focus:border-red-400;
+  }
+  .form-group__error-msg { @apply text-xs text-red-600 mt-0.5; }
+  .form-group__hint      { @apply text-xs text-slate-400 font-normal; }
+  .form-group__optional  { @apply text-xs text-slate-400 font-normal; }
+  .form-group--inline    { @apply flex-row items-center gap-2; }
+  .form-group--inline label { @apply text-xs whitespace-nowrap; }
+  .form-group--inline input,
+  .form-group--inline select { @apply w-auto; }
+  .form-group__input-wrap    { @apply relative flex items-center; }
+  .form-group__pw-toggle {
+    @apply absolute right-2 text-slate-400 hover:text-slate-600 bg-transparent border-0 p-0 cursor-pointer;
+  }
+
+  .form-error { @apply text-xs text-red-600; }
+
+  /* ── Alerts ──────────────────────────────────────────────────────────── */
+  .alert {
+    @apply flex items-start gap-3 rounded-xl p-4 text-sm mb-4;
+  }
+  .alert--error       { @apply bg-red-50    border border-red-200    text-red-800;   }
+  .alert--maintenance { @apply bg-amber-50  border border-amber-200  text-amber-900; }
+  .alert--conflict    { @apply bg-orange-50 border border-orange-200 text-orange-900; }
+  .alert__icon   { @apply text-xl shrink-0 mt-0.5; }
+  .alert__close  { @apply ml-auto text-slate-400 hover:text-slate-600 bg-transparent border-0 cursor-pointer; }
+
+  /* ── Toasts ──────────────────────────────────────────────────────────── */
+  .toast-stack { @apply fixed top-4 right-4 z-50 flex flex-col gap-2 w-80; }
+  .toast {
+    @apply flex items-start gap-3 rounded-xl p-4 shadow-modal text-sm animate-fade-in;
+  }
+  .toast--success { @apply bg-emerald-50 border border-emerald-200 text-emerald-900; }
+  .toast--warning { @apply bg-amber-50   border border-amber-200   text-amber-900;   }
+  .toast--info    { @apply bg-sky-50     border border-sky-200     text-sky-900;     }
+  .toast__icon  { @apply text-lg shrink-0 mt-0.5; }
+  .toast__body  { @apply flex-1; }
+  .toast__close { @apply ml-auto text-slate-400 hover:text-slate-600 bg-transparent border-0 cursor-pointer; }
+
+  /* ── Spinner ─────────────────────────────────────────────────────────── */
+  .hms-spinner {
+    @apply inline-block w-5 h-5 rounded-full border-2 border-current
+           border-t-transparent animate-spin-slow;
+  }
+  .hms-spinner--sm { @apply w-3.5 h-3.5; }
+
+  /* ── Stat cards ──────────────────────────────────────────────────────── */
+  .stats-bar {
+    @apply grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6;
+  }
+  .stat-card {
+    @apply rounded-xl p-4 flex flex-col items-center gap-1 shadow-card;
+  }
+  .stat-card--neutral  { @apply bg-white         border border-slate-200;  }
+  .stat-card--success  { @apply bg-emerald-50     border border-emerald-200;}
+  .stat-card--warning  { @apply bg-amber-50       border border-amber-200;  }
+  .stat-card--danger   { @apply bg-red-50         border border-red-200;    }
+  .stat-card--info     { @apply bg-sky-50         border border-sky-200;    }
+  .stat-card__icon     { @apply text-2xl; }
+  .stat-card__value    { @apply text-2xl font-bold text-slate-800; }
+  .stat-card__label    { @apply text-xs text-slate-500 text-center; }
+
+  /* ── Data tables ─────────────────────────────────────────────────────── */
+  .table-wrapper {
+    @apply w-full overflow-x-auto rounded-xl border border-slate-200 shadow-card;
+  }
+  .data-table {
+    @apply w-full text-sm border-collapse;
+  }
+  .data-table thead tr {
+    @apply bg-slate-100 text-xs text-slate-500 uppercase tracking-wide;
+  }
+  .data-table th, .data-table td {
+    @apply px-4 py-3 text-left border-b border-slate-100;
+  }
+  .data-table tbody tr:last-child td { @apply border-b-0; }
+  .data-table tbody tr { @apply bg-white hover:bg-slate-50 transition-colors; }
+  .data-table--full { @apply min-w-full; }
+  .data-table__row--muted   td { @apply text-slate-400; }
+  .data-table__row--alert   { @apply bg-red-50/60; }
+  .data-table__row--success { @apply bg-emerald-50/60; }
+  .data-table__row--completed { @apply bg-slate-50; }
+  .data-table__row--in-progress { @apply bg-sky-50/40; }
+  .data-table__qty--low { @apply text-red-600 font-semibold; }
+  .data-table__qty--ok  { @apply text-emerald-700 font-medium; }
+  .data-table__id       { @apply font-mono text-xs text-slate-500; }
+  .data-table__tx       { @apply font-mono text-xs; }
+  .data-table__issue    { @apply max-w-xs truncate; }
+
+  /* ── Action group (row buttons) ─────────────────────────────────────── */
+  .action-group { @apply flex items-center gap-2 flex-wrap; }
+
+  /* ── Filter bar ──────────────────────────────────────────────────────── */
+  .filter-bar {
+    @apply flex flex-wrap items-center gap-3 mb-4 p-3
+           bg-white border border-slate-200 rounded-xl shadow-card;
+  }
+  .filter-bar__count { @apply ml-auto text-xs text-slate-500; }
+
+  /* ── Tab bar ─────────────────────────────────────────────────────────── */
+  .tab-bar {
+    @apply flex border-b border-slate-200 mb-4;
+  }
+  .tab-bar__tab {
+    @apply flex items-center gap-2 px-4 py-2.5 text-sm font-medium
+           text-slate-500 border-b-2 border-transparent
+           hover:text-brand-600 hover:border-brand-300 transition-all cursor-pointer
+           bg-transparent;
+  }
+  .tab-bar__tab--active { @apply text-brand-600 border-brand-600; }
+  .tab-bar__count {
+    @apply inline-flex items-center justify-center rounded-full
+           bg-slate-200 text-slate-600 text-xs px-1.5 py-0.5 min-w-[1.25rem];
+  }
+  .tab-bar__count--danger { @apply bg-red-100 text-red-700; }
+
+  /* ── Category pills ──────────────────────────────────────────────────── */
+  .category-pills     { @apply flex flex-wrap gap-2 mb-4; }
+  .category-pill {
+    @apply flex items-center gap-2 px-3 py-1.5 rounded-full border
+           border-slate-200 bg-white text-sm cursor-pointer
+           hover:border-brand-400 hover:bg-brand-50 transition-all;
+  }
+  .category-pill--active  { @apply border-brand-500 bg-brand-50 text-brand-700; }
+  .category-pill__name    { @apply font-medium text-slate-700; }
+  .category-pill__count   { @apply text-xs text-slate-400; }
+  .category-pill__meta    { @apply text-xs text-slate-400; }
+
+  /* ── Pagination ──────────────────────────────────────────────────────── */
+  .pagination {
+    @apply flex items-center justify-center gap-4 mt-4;
+  }
+  .pagination__info { @apply text-sm text-slate-500; }
+
+  /* ── Admin page shell ────────────────────────────────────────────────── */
+  .admin-page {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8;
+  }
+  .admin-page__header {
+    @apply flex items-center justify-between mb-6;
+  }
+  .admin-page__title {
+    @apply text-2xl font-bold text-slate-800;
+  }
+
+  /* ── Admin dashboard grid ────────────────────────────────────────────── */
+  .admin-dashboard {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8;
+  }
+  .admin-dashboard__heading {
+    @apply text-3xl font-bold text-slate-800 mb-6;
+  }
+  .admin-dashboard__grid {
+    @apply grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6;
+  }
+  .admin-dashboard__widget { @apply min-w-0; }
+  .admin-dashboard__widget--full { @apply lg:col-span-2; }
+
+  /* ── Widget shells ───────────────────────────────────────────────────── */
+  .widget {
+    @apply bg-white rounded-2xl border border-slate-200 shadow-card p-5;
+  }
+  .widget__header {
+    @apply flex items-center justify-between mb-4;
+  }
+  .widget__title {
+    @apply text-base font-semibold text-slate-800 flex items-center gap-2;
+  }
+  .widget__badge {
+    @apply inline-flex items-center justify-center rounded-full
+           text-xs font-bold px-2 py-0.5 min-w-[1.25rem];
+  }
+  .widget__badge--danger  { @apply bg-red-500    text-white; }
+  .widget__badge--warning { @apply bg-amber-500  text-white; }
+  .widget__section        { @apply mt-4; }
+  .widget__section-title  { @apply text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2; }
+  .widget__table-wrapper  { @apply overflow-x-auto rounded-xl border border-slate-200; }
+  .widget__empty          { @apply text-sm text-slate-400 italic py-4 text-center; }
+  .widget__filters        { @apply flex flex-wrap gap-3 mb-4; }
+  .widget__toast {
+    @apply flex items-center justify-between gap-2 rounded-xl px-4 py-3 text-sm mb-3;
+  }
+  .widget__toast--warning { @apply bg-amber-50 border border-amber-200 text-amber-900; }
+  .widget__toast--error   { @apply bg-red-50   border border-red-200   text-red-900;   }
+  .widget__toast-close    { @apply text-slate-400 hover:text-slate-600 bg-transparent border-0 cursor-pointer; }
+
+  /* ── Auth pages ──────────────────────────────────────────────────────── */
+  .auth-page {
+    @apply min-h-screen flex;
+  }
+  .auth-page__brand {
+    @apply hidden lg:flex flex-col items-center justify-center
+           w-2/5 bg-gradient-to-br from-brand-700 to-brand-900 text-white;
+  }
+  .auth-page__hotel-name  { @apply text-6xl font-black tracking-tight; }
+  .auth-page__tagline     { @apply text-brand-200 mt-2 text-lg; }
+  .auth-page__form-side {
+    @apply flex-1 flex items-center justify-center bg-white px-6 py-12;
+  }
+  .auth-card {
+    @apply w-full max-w-md;
+  }
+  .auth-card__header { @apply mb-8; }
+  .auth-card__title  { @apply text-3xl font-bold text-slate-800; }
+  .auth-card__subtitle { @apply text-slate-500 mt-1; }
+  .auth-card__footer { @apply mt-6 text-center text-sm text-slate-500; }
+  .auth-card__link   { @apply text-brand-600 font-medium hover:text-brand-700; }
+  .auth-form         { @apply flex flex-col gap-5; }
+  .auth-form__error {
+    @apply flex items-center justify-between gap-2 bg-red-50 border border-red-200
+           rounded-xl px-4 py-3 text-sm text-red-800;
+  }
+  .auth-form__error-close {
+    @apply text-red-400 hover:text-red-600 bg-transparent border-0 cursor-pointer;
+  }
+
+  /* ── Navbar ──────────────────────────────────────────────────────────── */
+  .navbar {
+    @apply sticky top-0 z-40 bg-white border-b border-slate-200 shadow-sm;
+  }
+  .navbar__inner {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16
+           flex items-center justify-between;
+  }
+  .navbar__brand {
+    @apply flex items-center gap-2 font-bold text-xl text-slate-800 no-underline;
+  }
+  .navbar__brand-logo { @apply text-2xl; }
+  .navbar__brand-name { @apply text-brand-700; }
+  .navbar__links      { @apply hidden lg:flex items-center gap-1; }
+  .navbar__link {
+    @apply px-3 py-2 rounded-lg text-sm text-slate-600 hover:text-brand-700
+           hover:bg-brand-50 transition-all no-underline;
+  }
+  .navbar__link--active { @apply text-brand-700 bg-brand-50 font-medium; }
+  .navbar__link--danger { @apply text-red-600 hover:bg-red-50; }
+  .navbar__controls   { @apply flex items-center gap-3; }
+  .navbar__auth-links { @apply hidden lg:flex items-center gap-2; }
+
+  .navbar__avatar {
+    @apply flex items-center gap-2 rounded-xl px-3 py-1.5 text-sm
+           bg-transparent border border-slate-200 hover:bg-slate-50
+           transition-all cursor-pointer;
+  }
+  .navbar__avatar-initials {
+    @apply w-7 h-7 rounded-full bg-brand-600 text-white text-xs font-bold
+           flex items-center justify-center;
+  }
+  .navbar__avatar-name  { @apply hidden sm:block text-slate-700 font-medium; }
+  .navbar__avatar-caret { @apply text-slate-400 text-xs; }
+
+  .navbar__dropdown {
+    @apply absolute right-0 mt-2 w-64 bg-white border border-slate-200
+           rounded-2xl shadow-modal py-2 animate-fade-in;
+  }
+  /* Dropdown needs a positioned parent — applied on the wrapper */
+  .navbar__user-menu    { @apply relative; }
+  .navbar__dropdown-header {
+    @apply px-4 py-3 border-b border-slate-100 flex flex-col gap-0.5;
+  }
+  .navbar__dropdown-name  { @apply font-semibold text-sm text-slate-800; }
+  .navbar__dropdown-email { @apply text-xs text-slate-500; }
+  .navbar__dropdown-role  { @apply mt-1 self-start; }
+  .navbar__dropdown-divider { @apply border-t border-slate-100 my-1; }
+  .navbar__dropdown-item {
+    @apply flex items-center gap-2 px-4 py-2 text-sm text-slate-700
+           hover:bg-slate-50 hover:text-brand-700 transition-colors
+           no-underline w-full text-left bg-transparent border-0 cursor-pointer;
+  }
+  .navbar__dropdown-item--danger { @apply text-red-600 hover:bg-red-50 hover:text-red-700; }
+
+  .navbar__hamburger {
+    @apply flex lg:hidden flex-col justify-center items-center gap-1.5
+           w-10 h-10 rounded-lg bg-transparent border-0 cursor-pointer;
+  }
+  .navbar__hamburger span {
+    @apply block w-5 h-0.5 bg-slate-600 rounded transition-all duration-200;
+  }
+  .navbar__hamburger--open span:nth-child(1) { @apply rotate-45 translate-y-2; }
+  .navbar__hamburger--open span:nth-child(2) { @apply opacity-0;               }
+  .navbar__hamburger--open span:nth-child(3) { @apply -rotate-45 -translate-y-2; }
+
+  .navbar__mobile-menu {
+    @apply hidden flex-col border-t border-slate-100 px-4 pb-4 gap-1
+           bg-white shadow-card animate-slide-down;
+  }
+  .navbar__mobile-menu--open { @apply flex lg:hidden; }
+  .navbar__mobile-divider { @apply border-t border-slate-100 my-2; }
+
+  /* ── Room gallery ────────────────────────────────────────────────────── */
+  .gallery-page { @apply min-h-screen; }
+  .gallery-page__hero {
+    @apply bg-gradient-to-br from-brand-700 to-brand-900 text-white
+           py-16 px-4 text-center;
+  }
+  .gallery-page__hero-title { @apply text-4xl font-black mb-2; }
+  .gallery-page__hero-sub   { @apply text-brand-200 mb-8 text-lg; }
+  .gallery-page__search-bar {
+    @apply max-w-4xl mx-auto bg-white rounded-2xl shadow-modal p-4
+           grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4;
+  }
+  .search-bar__field { @apply flex flex-col gap-1; }
+  .search-bar__field label { @apply text-xs font-semibold text-slate-500 uppercase; }
+  .search-bar__field input,
+  .search-bar__field select { @apply border-slate-200 text-slate-800; }
+  .search-bar__actions { @apply flex items-end gap-2; }
+  .gallery-page__nights-badge {
+    @apply mt-4 inline-block bg-brand-800/60 text-brand-100 rounded-full px-4 py-1 text-sm;
+  }
+  .gallery-page__results {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8;
+  }
+  .gallery-page__results-heading {
+    @apply text-xl font-semibold text-slate-700 mb-6;
+  }
+  .room-gallery {
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6;
+  }
+
+  /* ── Room card ───────────────────────────────────────────────────────── */
+  .room-card {
+    @apply bg-white rounded-2xl border border-slate-200 shadow-card
+           cursor-pointer hover:shadow-modal hover:-translate-y-1
+           transition-all duration-200 overflow-hidden;
+  }
+  .room-card__img-wrap    { @apply relative h-48 bg-slate-100; }
+  .room-card__img         { @apply w-full h-full object-cover; }
+  .room-card__img-placeholder {
+    @apply flex items-center justify-center w-full h-full text-5xl text-slate-300;
+  }
+  .room-card__type-badge  {
+    @apply absolute top-2 right-2 capitalize;
+  }
+  .room-card__body        { @apply p-4 flex flex-col gap-2; }
+  .room-card__title       { @apply font-semibold text-slate-800; }
+  .room-card__meta        { @apply text-xs text-slate-500 flex gap-3; }
+  .room-card__amenities   {
+    @apply flex flex-wrap gap-1 list-none p-0 m-0;
+  }
+  .room-card__amenities li {
+    @apply text-xs bg-slate-100 text-slate-600 rounded-full px-2 py-0.5;
+  }
+  .room-card__pricing     { @apply flex items-baseline justify-between mt-1; }
+  .room-card__price       { @apply text-lg font-bold text-brand-700; }
+  .room-card__price small { @apply text-xs text-slate-400 font-normal; }
+  .room-card__total       { @apply text-xs text-slate-500; }
+  .room-card__cta         { @apply mt-2; }
+  .room-card--skeleton    { @apply pointer-events-none; }
+  .room-gallery__skeleton-grid {
+    @apply col-span-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6;
+  }
+  .skeleton-block {
+    @apply bg-slate-200 rounded-2xl animate-pulse h-48;
+  }
+  .skeleton-line {
+    @apply bg-slate-200 rounded animate-pulse h-4 my-2;
+  }
+  .skeleton-line--title { @apply h-5 w-3/4; }
+  .skeleton-line--med   { @apply w-1/2; }
+  .skeleton-line--short { @apply w-1/3; }
+
+  /* ── Room detail page ────────────────────────────────────────────────── */
+  .room-detail {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8;
+  }
+  .room-detail__back { @apply mb-4; }
+  .room-detail__gallery { @apply mb-6; }
+  .room-detail__hero-img {
+    @apply w-full h-80 object-cover rounded-2xl shadow-card;
+  }
+  .room-detail__thumbnails {
+    @apply flex gap-2 mt-3 overflow-x-auto pb-1;
+  }
+  .room-detail__thumb {
+    @apply w-16 h-16 rounded-lg overflow-hidden border-2 border-transparent
+           cursor-pointer transition-all bg-transparent p-0;
+  }
+  .room-detail__thumb--active { @apply border-brand-600; }
+  .room-detail__thumb img     { @apply w-full h-full object-cover; }
+  .room-detail__no-img {
+    @apply flex items-center justify-center h-64 bg-slate-100
+           rounded-2xl text-7xl text-slate-300;
+  }
+  .room-detail__content {
+    @apply grid grid-cols-1 lg:grid-cols-3 gap-8;
+  }
+  .room-detail__info          { @apply lg:col-span-2 flex flex-col gap-4; }
+  .room-detail__info-header   { @apply flex items-start justify-between gap-4; }
+  .room-detail__title         { @apply text-3xl font-bold text-slate-800; }
+  .room-detail__price-block   { @apply text-right; }
+  .room-detail__price         { @apply text-2xl font-bold text-brand-700; }
+  .room-detail__price small   { @apply text-sm text-slate-400 font-normal; }
+  .room-detail__occupancy     { @apply text-sm text-slate-600; }
+  .room-detail__description   { @apply text-slate-600 text-sm leading-relaxed; }
+  .room-detail__section-title { @apply text-base font-semibold text-slate-700 mb-3; }
+  .amenities-grid {
+    @apply grid grid-cols-2 sm:grid-cols-3 gap-2 list-none p-0 m-0;
+  }
+  .amenities-grid__item {
+    @apply flex items-center gap-2 text-sm text-slate-600 bg-slate-50
+           rounded-lg px-3 py-2;
+  }
+
+  .room-detail__booking-panel {
+    @apply bg-white rounded-2xl border border-slate-200 shadow-card p-5
+           flex flex-col gap-4 h-fit;
+  }
+  .booking-panel__dates       { @apply grid grid-cols-2 gap-3; }
+  .booking-panel__nights      { @apply text-sm text-slate-600 font-medium; }
+  .booking-panel__est         { @apply text-slate-400; }
+  .booking-panel__badge-row   { @apply min-h-[2rem] flex items-center; }
+  .booking-panel__auth-hint   { @apply text-xs text-slate-500 text-center; }
+
+  .avail-badge {
+    @apply inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium;
+  }
+  .avail-badge--available   { @apply bg-emerald-100 text-emerald-800; }
+  .avail-badge--unavailable { @apply bg-red-100     text-red-800;     }
+  .avail-badge--checking    { @apply bg-sky-100     text-sky-800;     }
+  .avail-badge--error       { @apply bg-slate-100   text-slate-600;   }
+
+  /* ── Booking form ────────────────────────────────────────────────────── */
+  .booking-form-page { @apply max-w-2xl mx-auto px-4 py-12; }
+  .booking-form      { @apply bg-white rounded-2xl border border-slate-200 shadow-card p-6; }
+  .booking-form__back  { @apply mb-4; }
+  .booking-form__title { @apply text-2xl font-bold text-slate-800 mb-4; }
+  .booking-form__room-snap {
+    @apply flex gap-4 items-center mb-6 p-4 bg-slate-50
+           rounded-xl border border-slate-200;
+  }
+  .booking-form__room-img { @apply w-24 h-20 object-cover rounded-xl; }
+  .booking-form__room-info { @apply flex flex-col gap-1; }
+  .booking-form__nights    { @apply text-slate-500 text-sm; }
+  .booking-form__rate      { @apply font-semibold text-brand-700; }
+  .booking-form__fields    { @apply flex flex-col gap-5 mt-4; }
+  .booking-form__estimate  {
+    @apply grid grid-cols-2 gap-x-4 gap-y-1 text-sm
+           bg-slate-50 rounded-xl p-4 border border-slate-200;
+  }
+  .booking-form__estimate-total { @apply font-semibold text-slate-800; }
+
+  /* ── Payment page ────────────────────────────────────────────────────── */
+  .payment-page { @apply max-w-5xl mx-auto px-4 py-12; }
+  .payment-page__title { @apply text-3xl font-bold text-slate-800 mb-8; }
+  .payment-page__layout {
+    @apply grid grid-cols-1 lg:grid-cols-5 gap-8;
+  }
+  .payment-page__summary {
+    @apply lg:col-span-2 bg-white rounded-2xl border border-slate-200
+           shadow-card p-6 h-fit;
+  }
+  .payment-page__summary-title { @apply text-lg font-semibold text-slate-700 mb-4; }
+  .payment-page__summary-list  {
+    @apply grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-sm;
+  }
+  .payment-page__summary-list dt { @apply text-slate-500; }
+  .payment-page__summary-list dd { @apply font-medium text-slate-800; }
+  .payment-page__amount         { @apply text-2xl font-bold text-brand-700 !important; }
+  .payment-page__form-section   { @apply lg:col-span-3; }
+  .payment-page__form-title     { @apply text-lg font-semibold text-slate-700 mb-4; }
+  .payment-page__pay-btn        { @apply mt-6; }
+  .payment-method-grid {
+    @apply grid grid-cols-2 sm:grid-cols-3 gap-3;
+  }
+  .payment-method-card {
+    @apply flex items-center gap-2 p-3 rounded-xl border-2 border-slate-200
+           cursor-pointer hover:border-brand-400 hover:bg-brand-50
+           transition-all text-sm text-slate-700 select-none;
+  }
+  .payment-method-card--active { @apply border-brand-600 bg-brand-50 text-brand-800; }
+  .payment-method-card__radio  { @apply sr-only; }
+  .payment-form__methods        { @apply border-0 p-0 mb-2; }
+  .payment-form__methods-legend { @apply text-sm font-medium text-slate-700 mb-2; }
+
+  /* ── Price breakdown modal ───────────────────────────────────────────── */
+  .modal-backdrop {
+    @apply fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4;
+  }
+  .modal {
+    @apply bg-white rounded-2xl shadow-modal w-full max-w-lg max-h-[90vh]
+           overflow-y-auto animate-fade-in;
+  }
+  .modal--sm { @apply max-w-md; }
+  .modal__header {
+    @apply flex items-center justify-between px-6 py-4
+           border-b border-slate-100;
+  }
+  .modal__title   { @apply text-xl font-bold text-slate-800; }
+  .modal__close   {
+    @apply text-slate-400 hover:text-slate-600 bg-transparent border-0
+           cursor-pointer text-xl leading-none;
+  }
+  .modal__body    { @apply px-6 py-5 flex flex-col gap-4; }
+  .modal__booking-summary {
+    @apply bg-slate-50 rounded-xl p-4 text-sm text-slate-700 flex flex-col gap-1;
+  }
+  .modal__booking-type { @apply text-slate-500; }
+  .modal__date  { @apply font-medium; }
+  .modal__nights { @apply text-slate-500; }
+  .modal__desc  { @apply text-sm text-slate-600 flex items-center gap-2; }
+  .modal__dept  { @apply text-slate-500; }
+  .modal__hint  { @apply text-xs text-slate-500 bg-slate-50 rounded-lg px-3 py-2; }
+  .modal__loading {
+    @apply flex items-center justify-center gap-3 py-8 text-slate-500;
+  }
+  .modal__error {
+    @apply bg-red-50 rounded-xl p-4 text-sm text-red-800 flex flex-col gap-2;
+  }
+  .modal__error-detail { @apply text-xs text-red-600; }
+  .modal__footer {
+    @apply flex items-center justify-end gap-3 px-6 py-4
+           border-t border-slate-100 flex-wrap;
+  }
+  .modal__confirm-hint { @apply text-xs text-slate-400 w-full text-right; }
+
+  .breakdown-table { @apply w-full text-sm; }
+  .breakdown-table td { @apply py-2.5 align-top; }
+  .breakdown-table__label {
+    @apply text-slate-600 flex flex-col;
+  }
+  .breakdown-table__sub  { @apply text-xs text-slate-400; }
+  .breakdown-table__value { @apply text-right font-medium text-slate-800; }
+  .breakdown-table__value--total { @apply text-lg font-bold text-brand-700; }
+  .breakdown-table__row--tax  td { @apply text-amber-700; }
+  .breakdown-table__row--divider td { @apply py-0.5; }
+  .breakdown-table__row--total td { @apply pt-2; }
+
+  /* ── Override / salary panels ────────────────────────────────────────── */
+  .override-panel {
+    @apply bg-white rounded-2xl border border-slate-200 shadow-card p-5;
+  }
+  .override-panel__header {
+    @apply flex items-center justify-between mb-4;
+  }
+  .override-panel__title {
+    @apply text-base font-semibold text-slate-800 flex items-center gap-2;
+  }
+  .override-panel__section       { @apply mt-6; }
+  .override-panel__section--resolved { @apply opacity-70; }
+  .override-panel__section-title {
+    @apply text-xs font-semibold uppercase tracking-wider text-slate-500 mb-3;
+  }
+  .override-panel__fail-cell     { @apply bg-red-50/60 !important; }
+  .override-panel__fail-form     { @apply flex flex-col gap-2 py-2 max-w-xl; }
+  .override-panel__fail-label    { @apply text-sm font-medium text-slate-700; }
+  .override-panel__fail-textarea {
+    @apply rounded-xl border border-slate-300 p-3 text-sm resize-none;
+  }
+  .override-panel__fail-actions  { @apply flex gap-2 mt-1; }
+  .override-panel__fail-reason   { @apply text-xs text-slate-500 italic max-w-xs truncate; }
+
+  /* ── Salary widget ───────────────────────────────────────────────────── */
+  .salary-widget {
+    @apply bg-white rounded-2xl border border-slate-200 shadow-card p-5 mb-6;
+  }
+  .salary-widget__title { @apply text-base font-semibold text-slate-800 mb-4; }
+  .salary-widget__totals {
+    @apply grid grid-cols-2 gap-4 mb-5;
+  }
+  .salary-widget__total-card {
+    @apply bg-slate-50 rounded-xl p-4 flex flex-col gap-0.5;
+  }
+  .salary-widget__total-card--highlight {
+    @apply bg-brand-50 border border-brand-200;
+  }
+  .salary-widget__total-value { @apply text-2xl font-bold text-slate-800; }
+  .salary-widget__total-label { @apply text-xs text-slate-500; }
+  .salary-widget__rows        { @apply flex flex-col gap-4; }
+  .salary-widget__row         { @apply flex flex-col gap-1.5; }
+  .salary-widget__row-header  {
+    @apply flex items-center gap-3 text-sm flex-wrap;
+  }
+  .salary-widget__role  { @apply flex-1; }
+  .salary-widget__heads { @apply text-slate-500 text-xs; }
+  .salary-widget__avg   { @apply text-slate-600 font-medium; }
+  .salary-widget__total { @apply text-slate-500 text-xs ml-auto; }
+  .salary-widget__bar-track {
+    @apply h-2 bg-slate-100 rounded-full overflow-hidden;
+  }
+  .salary-widget__bar {
+    @apply h-full bg-brand-500 rounded-full transition-all duration-500;
+  }
+
+  /* ── Staff cells & shift badges ──────────────────────────────────────── */
+  .staff-cell {
+    @apply flex items-center gap-3;
+  }
+  .staff-cell__avatar {
+    @apply w-9 h-9 rounded-full bg-brand-100 text-brand-700 text-xs font-bold
+           flex items-center justify-center shrink-0;
+  }
+  .staff-cell__name  { @apply font-medium text-slate-800 text-sm; }
+  .staff-cell__email { @apply text-xs text-slate-400; }
+  .shift-badge {
+    @apply font-mono text-xs bg-slate-100 text-slate-700 px-2 py-0.5 rounded;
+  }
+  .shift-badge--unset { @apply text-slate-400 italic; }
+
+  /* ── Quick update (stock) ────────────────────────────────────────────── */
+  .quick-update {
+    @apply flex items-center gap-2 flex-wrap;
+  }
+  .quick-update__op-toggle { @apply flex; }
+  .quick-update__op-toggle .btn {
+    @apply rounded-none first:rounded-l-lg last:rounded-r-lg;
+  }
+  .quick-update__input { @apply w-16 !important; }
+  .quick-update__ok    { @apply text-emerald-600 font-bold text-base; }
+
+  /* ── Booking Page ────────────────────────────────────────────────────── */
+  .bp-page {
+    @apply min-h-screen bg-slate-50;
+  }
+
+  /* Hero header */
+  .bp-header {
+    @apply bg-gradient-to-br from-brand-700 via-brand-800 to-brand-900
+           text-white py-12 px-4;
+  }
+  .bp-header__inner {
+    @apply max-w-5xl mx-auto text-center;
+  }
+  .bp-header__title {
+    @apply text-4xl font-black tracking-tight mb-2;
+  }
+  .bp-header__subtitle {
+    @apply text-brand-200 text-lg;
+  }
+
+  /* Progress wrapper */
+  .bp-progress-wrapper {
+    @apply max-w-5xl mx-auto px-4 -mt-6 mb-8;
+  }
+
+  /* Progress bar */
+  .bp-progress {
+    @apply bg-white rounded-2xl shadow-modal px-6 py-5 relative;
+  }
+  .bp-progress__track {
+    @apply absolute top-[2.85rem] left-12 right-12 h-1
+           bg-slate-200 rounded-full overflow-hidden;
+  }
+  .bp-progress__fill {
+    @apply h-full bg-brand-500 rounded-full transition-all duration-500 ease-in-out;
+  }
+  .bp-progress__steps {
+    @apply flex justify-between items-start list-none p-0 m-0 relative z-10;
+  }
+  .bp-progress__step {
+    @apply flex flex-col items-center gap-2 flex-1;
+  }
+  .bp-progress__node {
+    @apply w-10 h-10 rounded-full border-2 border-slate-300 bg-white
+           flex items-center justify-center text-lg font-bold
+           text-slate-400 transition-all duration-300;
+  }
+  .bp-progress__step--active .bp-progress__node {
+    @apply border-brand-600 bg-brand-600 text-white scale-110 shadow-card;
+  }
+  .bp-progress__step--done .bp-progress__node {
+    @apply border-brand-500 bg-brand-500 text-white;
+  }
+  .bp-progress__meta {
+    @apply flex flex-col items-center;
+  }
+  .bp-progress__label {
+    @apply text-xs font-semibold text-slate-500;
+  }
+  .bp-progress__step--active .bp-progress__label {
+    @apply text-brand-700;
+  }
+  .bp-progress__step--done .bp-progress__label {
+    @apply text-brand-600;
+  }
+  .bp-progress__desc {
+    @apply text-xs text-slate-400 hidden sm:block text-center;
+  }
+
+  /* Body layout */
+  .bp-body {
+    @apply max-w-5xl mx-auto px-4 pb-16 flex flex-col lg:flex-row gap-6 items-start;
+  }
+  .bp-main {
+    @apply flex-1 min-w-0;
+  }
+
+  /* Step panel */
+  .bp-panel {
+    @apply bg-white rounded-2xl border border-slate-200 shadow-card p-6;
+  }
+  .bp-panel--animate {
+    @apply animate-fade-in;
+  }
+  .bp-panel__header {
+    @apply mb-6;
+  }
+  .bp-panel__back {
+    @apply text-sm text-brand-600 hover:text-brand-700 font-medium
+           bg-transparent border-0 cursor-pointer p-0 mb-3
+           flex items-center gap-1 hover:gap-2 transition-all;
+  }
+  .bp-panel__title {
+    @apply text-xl font-bold text-slate-800 mb-1;
+  }
+  .bp-panel__hint {
+    @apply text-sm text-slate-500;
+  }
+
+  /* Summary sidebar */
+  .bp-summary {
+    @apply w-full lg:w-72 shrink-0 bg-white rounded-2xl border border-slate-200
+           shadow-card p-5 lg:sticky lg:top-24 animate-fade-in;
+  }
+  .bp-summary__title {
+    @apply text-base font-bold text-slate-800 mb-4 pb-3 border-b border-slate-100;
+  }
+  .bp-summary__room {
+    @apply flex items-center gap-3 mb-4 pb-4 border-b border-slate-100;
+  }
+  .bp-summary__room-img {
+    @apply w-16 h-16 rounded-xl object-cover shrink-0;
+  }
+  .bp-summary__room-placeholder {
+    @apply w-16 h-16 rounded-xl bg-slate-100 flex items-center justify-center
+           text-3xl shrink-0;
+  }
+  .bp-summary__room-type {
+    @apply font-semibold text-sm text-slate-800 capitalize;
+  }
+  .bp-summary__room-num {
+    @apply text-slate-500 font-normal;
+  }
+  .bp-summary__room-occ {
+    @apply text-xs text-slate-500 mt-0.5;
+  }
+  .bp-summary__dl {
+    @apply grid grid-cols-2 gap-x-3 gap-y-2 text-sm mb-4;
+  }
+  .bp-summary__dl dt {
+    @apply text-slate-500;
+  }
+  .bp-summary__dl dd {
+    @apply font-medium text-slate-800 text-right;
+  }
+  .bp-summary__total-label {
+    @apply font-semibold text-slate-700 !important;
+  }
+  .bp-summary__total-value {
+    @apply font-bold text-brand-700 text-base text-right !important;
+  }
+  .bp-summary__secure {
+    @apply text-xs text-slate-400 text-center pt-3 border-t border-slate-100 mt-2;
+  }
+  .page-error {
+    @apply bg-red-50 border border-red-200 text-red-800 rounded-xl px-4 py-3 text-sm;
+  }
+  .page-empty {
+    @apply text-center text-slate-400 italic py-12;
+  }
+
+  /* ── Error / unauthorized pages ─────────────────────────────────────── */
+  .error-page {
+    @apply min-h-screen flex items-center justify-center bg-slate-50 p-4;
+  }
+  .error-page__card {
+    @apply bg-white rounded-2xl border border-slate-200 shadow-modal
+           max-w-md w-full p-8 flex flex-col items-center gap-4 text-center;
+  }
+  .error-page__icon  { @apply text-6xl; }
+  .error-page__title { @apply text-2xl font-bold text-slate-800; }
+  .error-page__body  { @apply text-sm text-slate-500; }
+  .error-page__actions { @apply flex gap-3 mt-2 flex-wrap justify-center; }
+
+  /* ── Stock category row ──────────────────────────────────────────────── */
+  .stock-page__category-row { @apply flex flex-wrap gap-2 mb-4; }
+
+  /* ── Inline restock (LowStockWidget) ────────────────────────────────── */
+  .inline-restock        { @apply flex items-center gap-2; }
+  .inline-restock__input { @apply w-20 !important; }
+
+  /* ── RoomFormModal ───────────────────────────────────────────────────── */
+  .rfm-modal  { @apply max-w-2xl w-full; }
+  .rfm-body   { @apply px-6 pb-2 flex flex-col gap-5 overflow-y-auto max-h-[70vh]; }
+  .rfm-grid-2 { @apply grid grid-cols-1 sm:grid-cols-2 gap-4; }
+  .rfm-req    { @apply text-red-500; }
+  .rfm-textarea {
+    @apply w-full rounded-lg border border-slate-300 px-3 py-2 text-sm
+           bg-white text-slate-800 outline-none resize-none
+           focus:ring-2 focus:ring-brand-500 focus:border-brand-500;
+  }
+  /* Amenity tag row */
+  .rfm-tag-row        { @apply flex gap-2 items-center; }
+  .rfm-tag-row__input { @apply flex-1; }
+  .rfm-tags           { @apply flex flex-wrap gap-1.5 mt-2; }
+  .rfm-tag {
+    @apply inline-flex items-center gap-1 bg-brand-100 text-brand-800
+           text-xs font-medium px-2.5 py-1 rounded-full;
+  }
+  .rfm-tag__remove {
+    @apply text-brand-500 hover:text-brand-700 bg-transparent border-0
+           cursor-pointer p-0 leading-none;
+  }
+  /* Drop zone */
+  .rfm-dropzone {
+    @apply flex flex-col items-center justify-center gap-1 mt-1
+           border-2 border-dashed border-slate-300 rounded-xl py-8 px-4
+           cursor-pointer hover:border-brand-400 hover:bg-brand-50
+           transition-all text-center;
+  }
+  .rfm-dropzone__icon  { @apply text-4xl; }
+  .rfm-dropzone__label { @apply text-sm font-medium text-slate-600; }
+  .rfm-dropzone__hint  { @apply text-xs text-slate-400; }
+  /* Image grid */
+  .rfm-img-label { @apply text-xs font-semibold text-slate-500 mt-3 mb-1.5; }
+  .rfm-img-grid  { @apply flex flex-wrap gap-2; }
+  .rfm-img-thumb {
+    @apply relative w-20 h-20 rounded-xl overflow-hidden border border-slate-200;
+  }
+  .rfm-img-thumb img { @apply w-full h-full object-cover; }
+  .rfm-img-thumb--new { @apply border-brand-300; }
+  .rfm-img-thumb__remove {
+    @apply absolute top-0.5 right-0.5 w-5 h-5 rounded-full bg-black/60
+           text-white text-xs flex items-center justify-center
+           cursor-pointer border-0 leading-none hover:bg-black/80;
+  }
+  .rfm-img-thumb__badge {
+    @apply absolute bottom-0 left-0 right-0 text-center text-[10px]
+           font-semibold bg-black/50 text-white py-0.5;
+  }
+  .rfm-img-thumb__badge--new { @apply bg-brand-600/80; }
+  .rfm-error {
+    @apply text-sm text-red-700 bg-red-50 border border-red-200
+           rounded-xl px-4 py-2.5;
+  }
+
+  /* ── RoomStatusToggle ────────────────────────────────────────────────── */
+  .rst-wrap    { @apply relative inline-block; }
+  .rst-trigger {
+    @apply cursor-pointer select-none hover:opacity-80 transition-opacity
+           flex items-center gap-1;
+  }
+  .rst-menu {
+    @apply absolute left-0 top-full mt-1 z-30 bg-white border border-slate-200
+           rounded-xl shadow-modal py-1 min-w-[10rem] list-none p-0 animate-fade-in;
+  }
+  .rst-menu__item {
+    @apply flex items-center gap-2 px-3 py-2 text-sm text-slate-700
+           cursor-pointer hover:bg-slate-50 transition-colors select-none;
+  }
+  .rst-menu__item--active { @apply bg-brand-50 text-brand-700 font-medium; }
+  .rst-menu__check        { @apply ml-auto text-brand-600 font-bold; }
+
+  /* ── StaffFormModal shift fieldset ──────────────────────────────────── */
+  .sfm-shift-fieldset {
+    @apply border border-slate-200 rounded-xl p-4 flex flex-col gap-3;
+  }
+  .sfm-shift-legend {
+    @apply text-sm font-medium text-slate-700 px-1;
+  }
+
+  /* ── ShiftTimingModal ────────────────────────────────────────────────── */
+  .stm-staff-row {
+    @apply flex items-center gap-3 bg-slate-50 rounded-xl p-3;
+  }
+  .stm-name { @apply font-semibold text-sm text-slate-800; }
+  .stm-role { @apply text-xs text-slate-500 capitalize; }
+  .stm-current {
+    @apply flex items-center gap-2 text-sm text-slate-600;
+  }
+  .stm-current__label { @apply text-slate-500; }
+
+  /* ── SalaryAnalyticsWidget ───────────────────────────────────────────── */
+  .saw-totals {
+    @apply grid grid-cols-3 gap-3 mb-5;
+  }
+  .saw-total-card {
+    @apply bg-slate-50 rounded-xl p-3 flex flex-col gap-0.5 border border-slate-100;
+  }
+  .saw-total-card--highlight {
+    @apply bg-brand-50 border-brand-200;
+  }
+  .saw-total-card__value {
+    @apply text-xl font-bold text-slate-800;
+  }
+  .saw-total-card--highlight .saw-total-card__value {
+    @apply text-brand-700;
+  }
+  .saw-total-card__label { @apply text-xs text-slate-500; }
+  .saw-rows   { @apply flex flex-col gap-4; }
+  .saw-row    { @apply flex flex-col gap-1.5; }
+  .saw-row__header {
+    @apply flex items-center justify-between gap-2 flex-wrap;
+  }
+  .saw-row__left  { @apply flex items-center gap-2; }
+  .saw-row__right { @apply flex items-center gap-3; }
+  .saw-role-dot {
+    @apply w-2.5 h-2.5 rounded-full shrink-0;
+  }
+  .saw-row__role  { @apply text-sm font-medium text-slate-700; }
+  .saw-row__avg   { @apply text-xs text-slate-500; }
+  .saw-row__total { @apply text-xs font-semibold text-slate-700; }
+  .saw-bar-track  {
+    @apply h-2 bg-slate-100 rounded-full overflow-hidden;
+  }
+  .saw-bar {
+    @apply h-full rounded-full transition-all duration-700 ease-out;
+  }
+
+  /* ── Navbar ──────────────────────────────────────────────────────────── */
+  .navbar {
+    @apply sticky top-0 z-40 bg-white border-b border-slate-200 shadow-sm;
+  }
+  .navbar__inner {
+    @apply max-w-7xl mx-auto px-4 h-14 flex items-center gap-4;
+  }
+  .navbar__brand {
+    @apply flex items-center gap-1.5 text-lg font-bold text-brand-700
+           no-underline mr-4 shrink-0;
+  }
+  .navbar__brand-name { @apply hidden sm:inline; }
+  .navbar__links {
+    @apply hidden md:flex items-center gap-1 flex-1;
+  }
+  .navbar__link {
+    @apply px-3 py-1.5 rounded-lg text-sm font-medium text-slate-600
+           hover:bg-slate-100 hover:text-slate-900 transition-colors no-underline;
+  }
+  .navbar__link--active {
+    @apply bg-brand-50 text-brand-700 font-semibold;
+  }
+  .navbar__right {
+    @apply ml-auto flex items-center gap-2;
+  }
+  .navbar__user {
+    @apply hidden sm:flex items-center gap-1.5 text-sm text-slate-600;
+  }
+  .navbar__role-badge {
+    @apply inline-block px-1.5 py-0.5 rounded text-[10px] font-bold
+           uppercase tracking-wide bg-brand-100 text-brand-700;
+  }
+  .navbar__hamburger {
+    @apply md:hidden p-1.5 rounded-lg text-slate-600 hover:bg-slate-100
+           transition-colors text-lg leading-none;
+  }
+  .navbar__chevron { @apply text-xs ml-0.5; }
+
+  /* Admin dropdown */
+  .navbar__dropdown { @apply relative; }
+  .navbar__dropdown-trigger {
+    @apply flex items-center gap-1 cursor-pointer;
+  }
+  .navbar__dropdown-menu {
+    @apply absolute top-full left-0 mt-1 w-52 bg-white rounded-xl shadow-lg
+           border border-slate-200 py-1 list-none z-50;
+  }
+  .navbar__dropdown-item {
+    @apply flex items-center gap-2 px-4 py-2.5 text-sm text-slate-700
+           hover:bg-slate-50 hover:text-slate-900 no-underline transition-colors;
+  }
+  .navbar__dropdown-item--active {
+    @apply bg-brand-50 text-brand-700 font-semibold;
+  }
+
+  /* Mobile menu */
+  .navbar__mobile {
+    @apply md:hidden flex flex-col gap-1 px-4 pb-3 border-t border-slate-100
+           bg-white;
+  }
+  .smp-deactivate-btn {
+    @apply text-amber-700 border-amber-200 hover:bg-amber-50;
+  }
+
+  /* ── StaffFormModal day-picker ───────────────────────────────────────── */
+  .sfm-day-row {
+    @apply flex flex-wrap gap-1.5 mt-1;
+  }
+  .sfm-day-btn {
+    @apply px-2.5 py-1 rounded-lg border border-slate-300 text-xs font-semibold
+           text-slate-600 bg-white cursor-pointer transition-all
+           hover:border-brand-400 hover:bg-brand-50;
+  }
+  .sfm-day-btn--active {
+    @apply border-brand-600 bg-brand-600 text-white;
+  }
+
+  /* ── InventoryFormModal / StockMonitorPage ───────────────────────────── */
+  .inv-low-badge {
+    @apply inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold
+           bg-amber-100 text-amber-800 border border-amber-300
+           cursor-pointer hover:bg-amber-200 transition-colors;
+  }
+  .inv-low-badge[aria-pressed="true"] {
+    @apply bg-amber-400 text-amber-900 border-amber-500;
+  }
+  .inv-alert-banner {
+    @apply flex items-center gap-3 mb-4 px-4 py-3 rounded-xl
+           bg-amber-50 border border-amber-200 text-sm;
+  }
+  .inv-alert-banner__icon { @apply text-xl shrink-0; }
+  .inv-alert-banner__text { @apply flex-1 text-amber-900; }
+
+  /* ── ServiceFormModal ───────────────────────────────────────────────── */
+  .sfm-icon-grid {
+    @apply flex flex-wrap gap-2 mt-1;
+  }
+  .sfm-icon-btn {
+    @apply w-9 h-9 rounded-lg border-2 border-slate-200 bg-white text-lg
+           flex items-center justify-center cursor-pointer
+           hover:border-brand-400 hover:bg-brand-50 transition-all;
+  }
+  .sfm-icon-btn--active {
+    @apply border-brand-600 bg-brand-50 scale-110 shadow-card;
+  }
+
+  /* ── ServiceAvailabilityToggle ───────────────────────────────────────── */
+  .sat-track {
+    @apply relative inline-flex items-center gap-2 rounded-full px-3 py-1
+           text-xs font-semibold border-2 cursor-pointer transition-all duration-200
+           disabled:opacity-60 disabled:pointer-events-none;
+  }
+  .sat-track--on {
+    @apply bg-emerald-50 border-emerald-400 text-emerald-800
+           hover:bg-emerald-100;
+  }
+  .sat-track--off {
+    @apply bg-slate-100 border-slate-300 text-slate-500
+           hover:bg-slate-200;
+  }
+  .sat-thumb {
+    @apply w-5 h-5 rounded-full flex items-center justify-center
+           text-[10px] font-bold shrink-0;
+  }
+  .sat-track--on  .sat-thumb { @apply bg-emerald-500 text-white; }
+  .sat-track--off .sat-thumb { @apply bg-slate-400   text-white; }
+  .sat-label  { @apply leading-none; }
+  .sat-spinner { @apply border-current; }
+
+  /* ── AttachServicesModal ─────────────────────────────────────────────── */
+  .asm-modal { @apply max-w-2xl; }
+  .asm-booking-info {
+    @apply flex items-center flex-wrap gap-2 text-sm bg-brand-50
+           border border-brand-200 rounded-xl px-4 py-2.5;
+  }
+  .asm-booking-info__label  { @apply text-brand-600 font-semibold text-xs uppercase tracking-wide; }
+  .asm-booking-info__id     { @apply text-brand-700; }
+  .asm-booking-info__sep    { @apply text-brand-300; }
+  .asm-booking-info__guest  { @apply font-medium text-slate-800; }
+  .asm-booking-info__room   { @apply text-slate-500; }
+
+  .asm-service-grid {
+    @apply grid grid-cols-2 sm:grid-cols-3 gap-3 list-none p-0 m-0;
+  }
+  .asm-service-card {
+    @apply flex flex-col gap-1 p-3 rounded-xl border-2 border-slate-200
+           bg-white cursor-pointer select-none transition-all
+           hover:border-brand-400 hover:bg-brand-50;
+  }
+  .asm-service-card--selected {
+    @apply border-brand-600 bg-brand-50 shadow-card;
+  }
+  .asm-service-card__top {
+    @apply flex items-start justify-between;
+  }
+  .asm-service-card__icon  { @apply text-2xl; }
+  .asm-service-card__check {
+    @apply w-5 h-5 rounded-full border-2 border-slate-300
+           flex items-center justify-center text-[10px] font-bold
+           text-transparent transition-all;
+  }
+  .asm-service-card__check--on {
+    @apply border-brand-600 bg-brand-600 text-white;
+  }
+  .asm-service-card__name  { @apply text-sm font-semibold text-slate-800 leading-tight; }
+  .asm-service-card__price { @apply text-sm font-bold text-brand-700; }
+  .asm-service-card__meta  { @apply text-xs text-slate-400; }
+
+  .asm-qty-row  {
+    @apply flex items-center gap-1 mt-1;
+  }
+  .asm-qty-btn  {
+    @apply w-6 h-6 rounded-md border border-slate-300 bg-white text-sm font-bold
+           flex items-center justify-center cursor-pointer hover:bg-slate-100
+           transition-colors leading-none;
+  }
+  .asm-qty-input {
+    @apply w-10 text-center text-xs font-mono py-0.5 !important;
+  }
+
+  .asm-bill {
+    @apply bg-slate-50 rounded-xl border border-slate-200 p-4 flex flex-col gap-2;
+  }
+  .asm-bill__title  { @apply text-sm font-semibold text-slate-700; }
+  .asm-bill__lines  { @apply flex flex-col gap-1 list-none p-0 m-0; }
+  .asm-bill__line   {
+    @apply flex items-center justify-between text-sm text-slate-600;
+  }
+  .asm-bill__total  {
+    @apply flex items-center justify-between text-sm font-semibold
+           text-slate-800 border-t border-slate-200 pt-2 mt-1;
+  }
+  .asm-bill__total-amount { @apply text-brand-700 text-base; }
+
+  /* ── ServicesManagementPage ──────────────────────────────────────────── */
+  .svc-attach-banner {
+    @apply flex flex-wrap items-center gap-3 mb-5 p-4
+           bg-brand-50 border border-brand-200 rounded-2xl text-sm;
+  }
+  .svc-attach-banner__icon  { @apply text-xl; }
+  .svc-attach-banner__text  { @apply text-brand-900; }
+  .svc-attach-banner__list  { @apply flex flex-wrap gap-2; }
+  .svc-attach-banner__more  { @apply text-xs text-brand-600 self-center; }
+  .svc-attach-booking-btn   { @apply font-mono text-xs; }
+
+  .svc-grid {
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4;
+  }
+  .svc-card {
+    @apply bg-white rounded-2xl border border-slate-200 shadow-card
+           p-5 flex flex-col gap-2 transition-all;
+  }
+  .svc-card--unavailable {
+    @apply opacity-60 bg-slate-50;
+  }
+  .svc-card__header {
+    @apply flex items-start justify-between mb-1;
+  }
+  .svc-card__header-right { @apply flex items-center gap-2; }
+  .svc-card__icon    { @apply text-3xl; }
+  .svc-card__name    { @apply font-bold text-slate-800 text-base; }
+  .svc-card__price   { @apply text-lg font-bold text-brand-700; }
+  .svc-card__duration { @apply text-sm text-slate-400 font-normal; }
+  .svc-card__cat     { @apply self-start; }
+  .svc-card__desc    {
+    @apply text-xs text-slate-500 leading-relaxed line-clamp-2 mt-1;
+  }
+  .svc-card__meta    { @apply text-xs text-slate-400; }
+  .svc-card__actions {
+    @apply flex items-center gap-2 mt-auto pt-3
+           border-t border-slate-100 flex-wrap;
+  }
+  .svc-attach-btn { @apply flex-1; }
+
+  /* ── Booking picker modal (attach flow) ──────────────────────────────── */
+  .abp-list {
+    @apply flex flex-col gap-2 list-none p-0 m-0 max-h-72 overflow-y-auto;
+  }
+  .abp-item {
+    @apply w-full flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-200
+           bg-white hover:bg-brand-50 hover:border-brand-300 transition-all
+           text-left cursor-pointer;
+  }
+  .abp-item__id    { @apply text-slate-500; }
+  .abp-item__guest { @apply font-medium text-slate-800 flex-1 truncate; }
+
+  /* ── RoomManagementPage ──────────────────────────────────────────────── */
+  .rmp-room-cell {
+    @apply flex items-center gap-3;
+  }
+  .rmp-room-thumb {
+    @apply w-10 h-10 rounded-lg object-cover shrink-0 border border-slate-200;
+  }
+  .rmp-room-thumb--placeholder {
+    @apply w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center
+           text-xl shrink-0;
+  }
+
+  /* ── AvailabilityChecker ─────────────────────────────────────────────── */
+  .avail-checker {
+    @apply flex flex-col gap-1.5;
+  }
+  .avail-checker__dates {
+    @apply flex items-center gap-1.5 flex-wrap;
+  }
+  .avail-checker__dates input[type="date"] {
+    @apply w-32 text-xs py-1 px-2;
+  }
+  .avail-checker__sep {
+    @apply text-slate-400 text-xs font-mono;
+  }
+
+  /* ── RoomFormModal dropzone drag-over state ──────────────────────────── */
+  .rfm-dropzone--over {
+    @apply border-brand-500 bg-brand-50;
+  }
+}

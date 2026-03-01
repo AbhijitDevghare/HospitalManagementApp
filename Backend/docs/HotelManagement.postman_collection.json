@@ -1,0 +1,668 @@
+{
+  "info": {
+    "name":        "Hotel Management System API",
+    "description": "Complete Postman collection for the MERN Stack Hotel Management System. Import this file and set the {{baseUrl}} and {{token}} environment variables to get started.",
+    "schema":      "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_postman_id": "hotel-management-system-v1"
+  },
+  "variable": [
+    { "key": "baseUrl",    "value": "http://localhost:5000/api", "type": "string" },
+    { "key": "token",      "value": "",                             "type": "string" },
+    { "key": "adminToken", "value": "",                          "type": "string" },
+    { "key": "userId",     "value": "",                          "type": "string" },
+    { "key": "roomId",     "value": "",                          "type": "string" },
+    { "key": "bookingId",  "value": "",                          "type": "string" },
+    { "key": "paymentId",  "value": "",                          "type": "string" },
+    { "key": "invoiceId",  "value": "",                          "type": "string" },
+    { "key": "reviewId",   "value": "",                          "type": "string" },
+    { "key": "serviceId",  "value": "",                          "type": "string" },
+    { "key": "staffId",    "value": "",                          "type": "string" },
+    { "key": "maintenanceId", "value": "", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "🔐 Auth",
+      "item": [
+        {
+          "name": "Register User",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "if (pm.response.code === 201) {",
+            "  const json = pm.response.json();",
+            "  pm.collectionVariables.set('token', json.token);",
+            "  pm.collectionVariables.set('userId', json.data.user._id);",
+            "  pm.test('Registered successfully', () => pm.response.to.have.status(201));",
+            "}"
+          ]}}],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url":    "{{baseUrl}}/auth/register",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john@example.com\",\n  \"password\": \"Secret@123\",\n  \"phone\": \"+919876543210\",\n  \"role\": \"guest\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Login User",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "if (pm.response.code === 200) {",
+            "  const json = pm.response.json();",
+            "  pm.collectionVariables.set('token', json.token);",
+            "  pm.test('Login successful', () => pm.response.to.have.status(200));",
+            "}"
+          ]}}],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url":    "{{baseUrl}}/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"john@example.com\",\n  \"password\": \"Secret@123\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Login Admin",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "if (pm.response.code === 200) {",
+            "  const json = pm.response.json();",
+            "  pm.collectionVariables.set('adminToken', json.token);",
+            "}"
+          ]}}],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url":    "{{baseUrl}}/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@hotel.com\",\n  \"password\": \"Admin@123\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Get Current User",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/auth/me"
+          }
+        },
+        {
+          "name": "Change Password",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type",  "value": "application/json" }
+            ],
+            "url": "{{baseUrl}}/auth/change-password",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"currentPassword\": \"Secret@123\",\n  \"newPassword\": \"NewSecret@456\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/auth/logout"
+          }
+        }
+      ]
+    },
+    {
+      "name": "🛏️ Rooms",
+      "item": [
+        {
+          "name": "Get All Rooms",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw":   "{{baseUrl}}/rooms?roomType=double&status=available&minPrice=1000&maxPrice=5000",
+              "host":  ["{{baseUrl}}"],
+              "path":  ["rooms"],
+              "query": [
+                { "key": "roomType", "value": "double" },
+                { "key": "status",   "value": "available" },
+                { "key": "minPrice", "value": "1000" },
+                { "key": "maxPrice", "value": "5000" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Available Rooms",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw":   "{{baseUrl}}/rooms/available?checkInDate=2025-02-01&checkOutDate=2025-02-05",
+              "host":  ["{{baseUrl}}"],
+              "path":  ["rooms", "available"],
+              "query": [
+                { "key": "checkInDate",  "value": "2025-02-01" },
+                { "key": "checkOutDate", "value": "2025-02-05" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Room By ID",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/rooms/{{roomId}}"
+          }
+        },
+        {
+          "name": "Check Room Availability",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw":   "{{baseUrl}}/rooms/{{roomId}}/availability?checkInDate=2025-02-01&checkOutDate=2025-02-05",
+              "host":  ["{{baseUrl}}"],
+              "path":  ["rooms", "{{roomId}}", "availability"],
+              "query": [
+                { "key": "checkInDate",  "value": "2025-02-01" },
+                { "key": "checkOutDate", "value": "2025-02-05" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Room (Admin)",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "if (pm.response.code === 201) {",
+            "  pm.collectionVariables.set('roomId', pm.response.json().data.room._id);",
+            "}"
+          ]}}],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": "{{baseUrl}}/rooms",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "roomNumber",    "value": "101",       "type": "text" },
+                { "key": "roomType",      "value": "double",    "type": "text" },
+                { "key": "pricePerNight", "value": "2500",      "type": "text" },
+                { "key": "maxOccupancy",  "value": "2",         "type": "text" },
+                { "key": "amenities",     "value": "[\"WiFi\",\"AC\"]", "type": "text" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Room (Admin)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" },
+              { "key": "Content-Type",  "value": "application/json" }
+            ],
+            "url": "{{baseUrl}}/rooms/{{roomId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"pricePerNight\": 3000,\n  \"amenities\": [\"WiFi\", \"AC\", \"Mini Bar\"]\n}"
+            }
+          }
+        },
+        {
+          "name": "Update Room Status (Admin)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" },
+              { "key": "Content-Type",  "value": "application/json" }
+            ],
+            "url": "{{baseUrl}}/rooms/{{roomId}}/status",
+            "body": { "mode": "raw", "raw": "{\n  \"status\": \"maintenance\"\n}" }
+          }
+        },
+        {
+          "name": "Delete Room (Admin)",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": "{{baseUrl}}/rooms/{{roomId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "📅 Bookings",
+      "item": [
+        {
+          "name": "Create Booking",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "if (pm.response.code === 201) {",
+            "  pm.collectionVariables.set('bookingId', pm.response.json().data.booking._id);",
+            "}"
+          ]}}],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type",  "value": "application/json" }
+            ],
+            "url": "{{baseUrl}}/bookings",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"roomId\": \"{{roomId}}\",\n  \"checkInDate\": \"2025-02-01\",\n  \"checkOutDate\": \"2025-02-05\",\n  \"numberOfGuests\": 2\n}"
+            }
+          }
+        },
+        {
+          "name": "Get My Bookings",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/bookings/my"
+          }
+        },
+        {
+          "name": "Get All Bookings (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": "{{baseUrl}}/bookings"
+          }
+        },
+        {
+          "name": "Get Booking By ID",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/bookings/{{bookingId}}"
+          }
+        },
+        {
+          "name": "Cancel Booking",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/bookings/{{bookingId}}/cancel"
+          }
+        },
+        {
+          "name": "Complete Booking (Admin)",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": "{{baseUrl}}/bookings/{{bookingId}}/complete"
+          }
+        }
+      ]
+    },
+    {
+      "name": "💳 Payments",
+      "item": [
+        {
+          "name": "Process Payment",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "if (pm.response.code === 201) {",
+            "  pm.collectionVariables.set('paymentId', pm.response.json().data.payment._id);",
+            "}"
+          ]}}],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type",  "value": "application/json" }
+            ],
+            "url": "{{baseUrl}}/payments",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"bookingId\": \"{{bookingId}}\",\n  \"paymentAmount\": 11200,\n  \"paymentMethod\": \"UPI\",\n  \"transactionId\": \"txn_test_001\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Get Payment By Booking",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/payments/booking/{{bookingId}}"
+          }
+        },
+        {
+          "name": "Get All Payments (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": "{{baseUrl}}/payments"
+          }
+        }
+      ]
+    },
+    {
+      "name": "🧾 Invoices",
+      "item": [
+        {
+          "name": "Preview Invoice (Public)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw":   "{{baseUrl}}/invoices/preview?pricePerNight=2500&checkInDate=2025-02-01&checkOutDate=2025-02-05&serviceCharges=500",
+              "host":  ["{{baseUrl}}"],
+              "path":  ["invoices", "preview"],
+              "query": [
+                { "key": "pricePerNight",  "value": "2500" },
+                { "key": "checkInDate",    "value": "2025-02-01" },
+                { "key": "checkOutDate",   "value": "2025-02-05" },
+                { "key": "serviceCharges", "value": "500" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Invoice By Booking",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/invoices/booking/{{bookingId}}"
+          }
+        },
+        {
+          "name": "Generate Invoice (Admin)",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "if (pm.response.code === 201) {",
+            "  pm.collectionVariables.set('invoiceId', pm.response.json().data.invoice._id);",
+            "}"
+          ]}}],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" },
+              { "key": "Content-Type",  "value": "application/json" }
+            ],
+            "url": "{{baseUrl}}/invoices/generate",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"bookingId\": \"{{bookingId}}\",\n  \"serviceCharges\": 500\n}"
+            }
+          }
+        },
+        {
+          "name": "Mark Invoice Paid (Admin)",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": "{{baseUrl}}/invoices/{{invoiceId}}/pay"
+          }
+        }
+      ]
+    },
+    {
+      "name": "📦 Inventory",
+      "item": [
+        {
+          "name": "Get All Inventory",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": "{{baseUrl}}/inventory"
+          }
+        },
+        {
+          "name": "Get Low Stock Alerts",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": "{{baseUrl}}/inventory/alerts"
+          }
+        },
+        {
+          "name": "Add Inventory Item (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" },
+              { "key": "Content-Type",  "value": "application/json" }
+            ],
+            "url": "{{baseUrl}}/inventory",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"itemName\": \"Bed Sheets\",\n  \"category\": \"linens\",\n  \"quantity\": 50,\n  \"unit\": \"pcs\",\n  \"lowStockThreshold\": 10\n}"
+            }
+          }
+        },
+        {
+          "name": "Update Stock (Admin)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" },
+              { "key": "Content-Type",  "value": "application/json" }
+            ],
+            "url": "{{baseUrl}}/inventory/{{inventoryId}}/stock",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"operation\": \"remove\",\n  \"amount\": 5\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "⭐ Reviews",
+      "item": [
+        {
+          "name": "Get Reviews For Room (Public)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/reviews/room/{{roomId}}"
+          }
+        },
+        {
+          "name": "Get Room Rating Summary",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/reviews/room/{{roomId}}/summary"
+          }
+        },
+        {
+          "name": "Submit Review",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "if (pm.response.code === 201) {",
+            "  pm.collectionVariables.set('reviewId', pm.response.json().data.review._id);",
+            "}"
+          ]}}],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type",  "value": "application/json" }
+            ],
+            "url": "{{baseUrl}}/reviews",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"roomId\": \"{{roomId}}\",\n  \"rating\": 4,\n  \"comment\": \"Great room and excellent service!\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Update Review",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type",  "value": "application/json" }
+            ],
+            "url": "{{baseUrl}}/reviews/{{reviewId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"rating\": 5,\n  \"comment\": \"Updated: Absolutely wonderful stay!\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete Review",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "{{baseUrl}}/reviews/{{reviewId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "🛎️ Services",
+      "item": [
+        {
+          "name": "Get All Services (Public)",
+          "request": { "method": "GET", "url": "{{baseUrl}}/services" }
+        },
+        {
+          "name": "Create Service (Admin)",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "if (pm.response.code === 201) {",
+            "  pm.collectionVariables.set('serviceId', pm.response.json().data.service._id);",
+            "}"
+          ]}}],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" },
+              { "key": "Content-Type",  "value": "application/json" }
+            ],
+            "url": "{{baseUrl}}/services",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"serviceName\": \"Spa\",\n  \"category\": \"wellness\",\n  \"price\": 1500,\n  \"isAvailable\": true\n}"
+            }
+          }
+        },
+        {
+          "name": "Attach Services To Booking",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type",  "value": "application/json" }
+            ],
+            "url": "{{baseUrl}}/services/attach",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"bookingId\": \"{{bookingId}}\",\n  \"serviceIds\": [\"{{serviceId}}\"]\n}"
+            }
+          }
+        },
+        {
+          "name": "Toggle Service Availability (Admin)",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": "{{baseUrl}}/services/{{serviceId}}/toggle"
+          }
+        }
+      ]
+    },
+    {
+      "name": "🔧 Maintenance",
+      "item": [
+        {
+          "name": "Report Maintenance Issue (Admin)",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "if (pm.response.code === 201) {",
+            "  pm.collectionVariables.set('maintenanceId', pm.response.json().data.record._id);",
+            "}"
+          ]}}],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" },
+              { "key": "Content-Type",  "value": "application/json" }
+            ],
+            "url": "{{baseUrl}}/maintenance",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"roomId\": \"{{roomId}}\",\n  \"issueDescription\": \"Air conditioning not working\",\n  \"priority\": \"high\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Get All Maintenance Records",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": "{{baseUrl}}/maintenance"
+          }
+        },
+        {
+          "name": "Update Maintenance Status",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" },
+              { "key": "Content-Type",  "value": "application/json" }
+            ],
+            "url": "{{baseUrl}}/maintenance/{{maintenanceId}}/status",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"maintenanceStatus\": \"in-progress\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Get Maintenance Summary",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": "{{baseUrl}}/maintenance/summary"
+          }
+        }
+      ]
+    },
+    {
+      "name": "👷 Staff",
+      "item": [
+        {
+          "name": "Add Staff (Admin)",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "if (pm.response.code === 201) {",
+            "  pm.collectionVariables.set('staffId', pm.response.json().data.staff._id);",
+            "}"
+          ]}}],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" },
+              { "key": "Content-Type",  "value": "application/json" }
+            ],
+            "url": "{{baseUrl}}/staff",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Alice Smith\",\n  \"email\": \"alice@hotel.com\",\n  \"phone\": \"+919876543211\",\n  \"role\": \"receptionist\",\n  \"salary\": 45000,\n  \"shiftTiming\": { \"startTime\": \"08:00\", \"endTime\": \"16:00\" }\n}"
+            }
+          }
+        },
+        {
+          "name": "Get All Staff (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": "{{baseUrl}}/staff"
+          }
+        },
+        {
+          "name": "Deactivate Staff (Admin)",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": "{{baseUrl}}/staff/{{staffId}}/deactivate"
+          }
+        },
+        {
+          "name": "Get Salary Summary (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": "{{baseUrl}}/staff/salary-summary"
+          }
+        }
+      ]
+    }
+  ]
+}
