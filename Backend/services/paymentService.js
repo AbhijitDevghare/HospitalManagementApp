@@ -13,7 +13,7 @@ const processPayment = async ({
   paymentAmount,
   paymentMethod,
   transactionId)
-  return;
+
   const booking = await Booking.findById(bookingId);
   if (!booking) {
     const error = new Error("Booking not found");
