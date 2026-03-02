@@ -1,9 +1,19 @@
 const Payment = require("../models/Payment");
 const Booking = require("../models/Booking");
 const { generateInvoice } = require("./invoiceService");
+const Invoice = require("../models/Invoice")
 
-// ─── 1. Process a new payment ─────────────────────────────────────────────────
-const processPayment = async ({ bookingId, paymentAmount, paymentMethod, transactionId }) => {
+const processPayment = async ({
+  bookingId,
+  paymentAmount,
+  paymentMethod,
+  transactionId,
+}) => {
+  console.log(bookingId,
+  paymentAmount,
+  paymentMethod,
+  transactionId)
+  return;
   const booking = await Booking.findById(bookingId);
   if (!booking) {
     const error = new Error("Booking not found");
@@ -17,53 +27,76 @@ const processPayment = async ({ bookingId, paymentAmount, paymentMethod, transac
     throw error;
   }
 
-  // Prevent duplicate payments for the same booking
-  const existingPayment = await Payment.findOne({
-    booking: bookingId,
-    paymentStatus: "success",
-  });
-
-  if (existingPayment) {
-    const error = new Error("A successful payment already exists for this booking");
-    error.statusCode = 409;
+  if (!paymentAmount || paymentAmount <= 0) {
+    const error = new Error("Invalid payment amount");
+    error.statusCode = 400;
     throw error;
   }
 
-  // Validate amount matches booking total
-  if (parseFloat(paymentAmount.toFixed(2)) !== parseFloat(booking.totalAmount.toFixed(2))) {
+  if (paymentMethod !== "cash" && !transactionId) {
     const error = new Error(
-      `Payment amount (${paymentAmount}) does not match booking total (${booking.totalAmount})`
+      "Transaction ID is required for card and UPI payments"
     );
     error.statusCode = 400;
     throw error;
   }
 
-  // Validate transactionId for non-cash payments
-  if (paymentMethod !== "cash" && !transactionId) {
-    const error = new Error("Transaction ID is required for card and UPI payments");
+  // Ensure invoice exists
+  let invoice = await Invoice.findOne({ booking: bookingId });
+
+  if (!invoice) {
+    invoice = await generateInvoice(bookingId, 0);
+  }
+
+  // Get already paid amount
+  const successfulPayments = await Payment.find({
+    booking: bookingId,
+    paymentStatus: "success",
+  });
+
+  const totalPaid = successfulPayments.reduce(
+    (sum, p) => sum + p.paymentAmount,
+    0
+  );
+
+  const remainingAmount = Number(
+    (invoice.totalBill - totalPaid).toFixed(2)
+  );
+
+  if (remainingAmount <= 0) {
+    const error = new Error("This booking is already fully paid");
     error.statusCode = 400;
     throw error;
   }
 
+  if (paymentAmount > remainingAmount) {
+    const error = new Error(
+      `Payment exceeds remaining balance (${remainingAmount})`
+    );
+    error.statusCode = 400;
+    throw error;
+  }
+
+  // Create payment
   const payment = await Payment.create({
-    booking:       bookingId,
+    booking: bookingId,
     paymentAmount,
     paymentMethod,
     transactionId: transactionId || null,
-    paymentStatus: "pending",
-    paymentDate:   new Date(),
+    paymentStatus: "success",
+    paymentDate: new Date(),
   });
 
-  // Simulate payment gateway processing
-  const processedPayment = await confirmPayment(payment._id);
+  const newTotalPaid = totalPaid + paymentAmount;
+  console.log(newTotalPaid," ",invoice.totalBill)
 
-  // Trigger invoice generation after successful payment
-  if (processedPayment.paymentStatus === "success") {
-    await generateInvoice(bookingId);
-  }
+  // Update invoice status correctly
+  invoice.isPaid = newTotalPaid >= invoice.totalBill;
+  await invoice.save();
 
-  return processedPayment;
+  return payment;
 };
+  
 
 // ─── 2. Confirm (finalize) a payment ─────────────────────────────────────────
 const confirmPayment = async (paymentId) => {

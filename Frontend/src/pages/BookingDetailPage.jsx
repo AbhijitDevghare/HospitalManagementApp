@@ -98,6 +98,15 @@ const S = {
   totalCardLabel: { fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#94a3b8', margin: '0 0 0.4rem' },
   totalCardAmt: { fontSize: '2rem', fontWeight: 800, color: '#6366f1', margin: 0 },
   totalCardSub: { fontSize: '0.75rem', color: '#94a3b8', margin: '4px 0 0' },
+  // Payment breakdown mini-table in sidebar
+  payBreakCard: { background: '#fff', borderRadius: '16px', boxShadow: '0 2px 12px rgba(0,0,0,0.06)', overflow: 'hidden', marginBottom: '1rem' },
+  payBreakHead: { padding: '0.75rem 1.25rem', borderBottom: '1px solid #f1f5f9', fontSize: '0.7rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#94a3b8' },
+  payBreakBody: { padding: '0.875rem 1.25rem' },
+  payBreakRow:  { display: 'flex', justifyContent: 'space-between', fontSize: '0.82rem', padding: '4px 0', color: '#475569' },
+  payBreakDiv:  { borderTop: '1.5px dashed #e2e8f0', margin: '6px 0' },
+  payBreakTotal:{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', fontWeight: 800, padding: '4px 0', color: '#1e293b' },
+  payBreakDue:  { display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', fontWeight: 800, padding: '4px 0', color: '#dc2626' },
+  payBreakPaid: { display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', fontWeight: 800, padding: '4px 0', color: '#16a34a' },
   viewInvoiceBtn: {
     width: '100%', padding: '11px', background: '#fff',
     border: '1.5px solid #c7d2fe', borderRadius: '12px',
@@ -187,12 +196,21 @@ const BookingDetailPage = () => {
 
   const canCancel = ['pending', 'confirmed'].includes(booking?.status?.toLowerCase());
   const nights    = calcNights(booking.checkInDate, booking.checkOutDate);
-  const paid      = booking?.paymentStatus?.toLowerCase() === 'paid';
   const room      = booking?.room ?? {};
-  const subtotal  = Number(booking?.subtotal   ?? (room.pricePerNight ?? 0) * nights);
-  const svcCharge = Number(booking?.serviceCharges ?? 0);
-  const taxAmt    = Number(booking?.taxAmount  ?? subtotal * TAX_RATE);
-  const total     = Number(booking?.totalAmount ?? subtotal + svcCharge + taxAmt);
+
+// Invoice-based payment logic
+const pricePerNight = Number(room.pricePerNight ?? 0);
+const subtotal      = Number(booking.subtotal ?? pricePerNight * nights);
+const svcCharge     = Number(booking.serviceCharges ?? booking.serviceCharge ?? 0);
+const taxAmt        = Number(booking.taxAmount ?? (subtotal + svcCharge) * TAX_RATE);
+const total         = Number(booking.totalAmount ?? subtotal + svcCharge + taxAmt);
+
+// 🔥 Correct Payment Logic
+const paidAmt      = Number(booking.paidAmount ?? 0);
+const remainingAmt = Math.max(0, Number((total - paidAmt).toFixed(2)));
+const amountDue    = remainingAmt;
+const fullyPaid    = remainingAmt <= 0;
+const paid         = fullyPaid;
 
   return (
     <>
@@ -202,7 +220,7 @@ const BookingDetailPage = () => {
         {/* Hero */}
         <div style={S.hero}>
           <div style={S.heroInner}>
-            <button style={S.backBtn} onClick={() => navigate('/bookings')}>← My Bookings</button>
+            <button style={S.backBtn} onClick={() => navigate(-1)}>← My Bookings</button>
             <div style={S.heroTop}>
               <div>
                 <h1 style={S.heroTitle}>🏨 Booking Details</h1>
@@ -282,22 +300,58 @@ const BookingDetailPage = () => {
               <div style={S.cardBody}>
                 <table style={S.costTable}>
                   <tbody>
+                    {/* Room subtotal */}
                     <tr>
-                      <td style={S.costTd}>Room ({nights} night{nights !== 1 ? 's' : ''} × ${room.pricePerNight ?? 0})</td>
+                      <td style={S.costTd}>
+                        🏨 Room charge
+                        <span style={{ display: 'block', fontSize: '0.75rem', color: '#94a3b8', marginTop: '1px' }}>
+                          ${pricePerNight.toFixed(2)} × {nights} night{nights !== 1 ? 's' : ''}
+                        </span>
+                      </td>
                       <td style={S.costTdRight}>${subtotal.toFixed(2)}</td>
                     </tr>
-                    {svcCharge > 0 && (
-                      <tr>
-                        <td style={S.costTd}>Service Charges</td>
-                        <td style={S.costTdRight}>${svcCharge.toFixed(2)}</td>
-                      </tr>
-                    )}
+
+                    {/* Service charges — always show, muted if 0 */}
                     <tr>
-                      <td style={S.costTd}>Tax ({(TAX_RATE * 100).toFixed(0)}%)</td>
+                      <td style={{ ...S.costTd, color: svcCharge > 0 ? '#475569' : '#cbd5e1' }}>
+                        🛎️ Service charges
+                        {/* {svcCharge === 0 && (
+                          <span style={{ display: 'block', fontSize: '0.72rem', color: '#cbd5e1', marginTop: '1px' }}>
+                            No extra services added
+                          </span>
+                        )} */}
+                      </td>
+                      <td style={{ ...S.costTdRight, color: svcCharge > 0 ? '#475569' : '#cbd5e1' }}>
+                        {amountDue > 0 ? `$${amountDue.toFixed(2)}` : '—'}
+                      </td>
+                    </tr>
+
+                    {/* Tax */}
+                    <tr>
+                      <td style={S.costTd}>
+                        🧾 Tax &amp; fees
+                        <span style={{ display: 'block', fontSize: '0.75rem', color: '#94a3b8', marginTop: '1px' }}>
+                          {(TAX_RATE * 100).toFixed(0)}% GST on subtotal
+                        </span>
+                      </td>
                       <td style={S.costTdRight}>${taxAmt.toFixed(2)}</td>
                     </tr>
+
+                    {/* Divider + Total */}
                     <tr>
-                      <td style={S.costTotalTd}><strong>Total</strong></td>
+                      <td colSpan={2} style={{ padding: '4px 0' }}>
+                        <div style={{ borderTop: '1.5px dashed #e2e8f0' }} />
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style={S.costTotalTd}>
+                        <strong>Total</strong>
+                        {!paid && (
+                          <span style={{ marginLeft: '8px', fontSize: '0.7rem', fontWeight: 700, padding: '2px 8px', borderRadius: '999px', background: '#fef9c3', color: '#a16207' }}>
+                            UNPAID
+                          </span>
+                        )}
+                      </td>
                       <td style={S.costTotalTdRight}><strong>${total.toFixed(2)}</strong></td>
                     </tr>
                   </tbody>
@@ -308,13 +362,12 @@ const BookingDetailPage = () => {
 
           {/* ── RIGHT sidebar ── */}
           <div>
-
-            {/* Payment status */}
+            {/* Payment status pill */}
             <div style={S.paymentBox(paid)}>
               <span style={S.paymentIcon}>{paid ? '✅' : '⏳'}</span>
               <div>
-                <p style={S.paymentLabel}>Payment</p>
-                <p style={S.paymentVal(paid)}>{paid ? 'Paid' : 'Pending Payment'}</p>
+                <p style={S.paymentLabel}>Payment Status</p>
+                <p style={S.paymentVal(paid)}>{paid ? 'Paid in Full' : 'Pending Payment'}</p>
                 {booking.paymentMethod && (
                   <p style={{ fontSize: '0.78rem', color: '#94a3b8', margin: '2px 0 0', textTransform: 'capitalize' }}>
                     via {booking.paymentMethod}
@@ -323,17 +376,68 @@ const BookingDetailPage = () => {
               </div>
             </div>
 
-            {/* Total highlight */}
-            <div style={S.totalCard}>
-              <p style={S.totalCardLabel}>Total Amount</p>
-              <p style={S.totalCardAmt}>${total.toFixed(2)}</p>
-              <p style={S.totalCardSub}>incl. tax & charges</p>
+            {/* Payment breakdown card — mirrors InvoicePage layout */}
+            <div style={S.payBreakCard}>
+              <div style={S.payBreakHead}>💳 Payment Breakdown</div>
+              <div style={S.payBreakBody}>
+
+                {/* Line items */}
+                <div style={S.payBreakRow}>
+                  <span>🏨 Room charge</span>
+                  <span>${subtotal.toFixed(2)}</span>
+                </div>
+                <div style={{ ...S.payBreakRow, color: svcCharge > 0 ? '#475569' : '#cbd5e1' }}>
+                  <span>🛎️ Service charges</span>
+                  <span>{amountDue > 0 ? `$${amountDue.toFixed(2)}` : '—'}</span>
+                </div>
+                <div style={S.payBreakRow}>
+                  <span>🧾 Tax ({(TAX_RATE * 100).toFixed(0)}%)</span>
+                  <span>${taxAmt.toFixed(2)}</span>
+                </div>
+
+                <div style={S.payBreakDiv} />
+
+                {/* Total */}
+                <div style={S.payBreakTotal}>
+                  <span>Total Bill</span>
+                  <span>${total.toFixed(2)}</span>
+                </div>
+
+                <div style={S.payBreakDiv} />
+
+                {/* Paid / Due */}
+                <div style={S.payBreakPaid}>
+                  <span>✅ Amount Paid</span>
+                  <span>${paidAmt.toFixed(2)}</span>
+                </div>
+                {amountDue > 0 && (
+                  <div style={S.payBreakDue}>
+                    <span>⏳ Amount Due</span>
+                    <span>${amountDue.toFixed(2)}</span>
+                  </div>
+                )}
+                {fullyPaid && (
+                  <div style={{ ...S.payBreakRow, color: '#16a34a', fontSize: '0.78rem', marginTop: '2px' }}>
+                    <span>🎉 Fully paid — no outstanding balance</span>
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* View Invoice */}
             <button style={S.viewInvoiceBtn} onClick={() => navigate(`/bookings/${id}/invoice`)}>
               🧾 View Invoice
             </button>
+
+            {/* Pay Remaining — only when there is an outstanding balance */}
+            {!fullyPaid && remainingAmt > 0 && (
+              <button
+                style={{ ...S.viewInvoiceBtn, background: 'linear-gradient(135deg,#6366f1,#818cf8)', color: '#fff', border: 'none', marginBottom: '0.5rem' }}
+                onClick={() => navigate('/payment', { state: { booking, amountDue: remainingAmt } })}
+              >
+                💳 Pay Remaining ${remainingAmt.toFixed(2)}
+              </button>
+            )}
 
             {/* Cancel */}
             {canCancel && (

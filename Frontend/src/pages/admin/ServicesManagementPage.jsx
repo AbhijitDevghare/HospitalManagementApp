@@ -379,6 +379,7 @@ const AttachServicesToBookingFlow = ({
             <ul className="abp-list">
               {bookings.map((b) => (
                 <li key={b._id ?? b.id}>
+                  {console.log("BOKKKKKKKKKKNING : ",bookings)}
                   <button type="button" className="abp-item"
                     onClick={() => setSelectedBooking(b)}>
                     <span className="abp-item__id font-mono text-xs">
@@ -387,8 +388,8 @@ const AttachServicesToBookingFlow = ({
                     <span className="abp-item__guest">
                       {b.guestName ?? b.user?.name ?? 'Guest'}
                     </span>
-                    {b.roomNumber && (
-                      <span className="badge badge--info">Rm {b.roomNumber}</span>
+                    {b.room.roomNumber && (
+                      <span className="badge badge--info">Rm {b.room.roomNumber}</span>
                     )}
                     <span className={`badge ${b.status === 'checked-in' ? 'badge--success' : 'badge--warning'} ml-auto`}>
                       {b.status}

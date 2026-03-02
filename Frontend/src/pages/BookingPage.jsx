@@ -94,6 +94,14 @@ const S = {
     color: getStatus(s).color,
     textTransform: 'uppercase', letterSpacing: '0.05em',
   }),
+  payBadge: (paid) => ({
+    fontSize: '0.7rem', fontWeight: 700, padding: '2px 10px',
+    borderRadius: '999px', border: '1px solid',
+    borderColor: paid ? '#bbf7d0' : '#fde68a',
+    background:  paid ? '#f0fdf4' : '#fffbeb',
+    color:       paid ? '#16a34a' : '#d97706',
+    textTransform: 'uppercase', letterSpacing: '0.05em',
+  }),
   cardMeta: { fontSize: '0.82rem', color: '#64748b', display: 'flex', flexWrap: 'wrap', gap: '12px', margin: '0.4rem 0 0' },
   metaItem: { display: 'flex', alignItems: 'center', gap: '4px' },
   cardRight: { display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '6px', flexShrink: 0 },
@@ -257,6 +265,9 @@ const BookingPage = () => {
                             </span>
                           )}
                           <span style={S.statusBadge(b.status)}>{s.label}</span>
+                          <span style={S.payBadge(b.paymentStatus?.toLowerCase() === 'paid')}>
+                            {b.paymentStatus?.toLowerCase() === 'paid' ? '✅ Paid' : '⏳Payment Pending'}
+                          </span>
                         </div>
                         <div style={S.cardMeta}>
                           <span style={S.metaItem}>📅 {fmt(b.checkInDate)} → {fmt(b.checkOutDate)}</span>
@@ -272,6 +283,9 @@ const BookingPage = () => {
                         {b.totalAmount && (
                           <span style={S.totalAmt}>${Number(b.totalAmount).toLocaleString()}</span>
                         )}
+                        {/* {console.log(
+                        "BOOKIGN PAGEEEEEEEEE",b
+                        )} */}
                         <button
                           style={S.viewBtn}
                           onClick={() => navigate(`/bookings/${id}`)}

@@ -2,101 +2,125 @@ const bookingService = require("../services/bookingService");
 const asyncHandler   = require("../middleware/asyncHandler");
 
 // ─── POST /api/bookings ────────────────────────────────────────────────────────
-const createBooking = asyncHandler(async (req, res) => {
-  const { roomId, checkInDate, checkOutDate, numberOfGuests, serviceCharges } =
-    req.body;
+const createBooking = asyncHandler(async (req, res, next) => {
+  try {
+    const { roomId, checkInDate, checkOutDate, numberOfGuests, serviceCharges } =
+      req.body;
 
-    console.log(req.body)
-  const booking = await bookingService.createBooking({
-    userId: req.user._id,
-    roomId,
-    checkInDate,
-    checkOutDate,
-    numberOfGuests,
-    serviceCharges: serviceCharges || 0,
-  });
+    console.log(req.body);
+    const booking = await bookingService.createBooking({
+      userId: req.user._id,
+      roomId,
+      checkInDate,
+      checkOutDate,
+      numberOfGuests,
+      serviceCharges: serviceCharges || 0,
+    });
 
-  res.status(201).json({
-    success: true,
-    message: "Booking created successfully.",
-    data: { booking },
-  });
+    res.status(201).json({
+      success: true,
+      message: "Booking created successfully.",
+      data: { booking },
+    });
+  } catch (err) {
+    next(err);
+  }
 });
 
 // ─── GET /api/bookings ─── admin: all bookings ────────────────────────────────
-const getAllBookings = asyncHandler(async (req, res) => {
-  const { status, userId, roomId } = req.query;
+const getAllBookings = asyncHandler(async (req, res, next) => {
+  try {
+    const { status, userId, roomId } = req.query;
 
-  const bookings = await bookingService.getAllBookings({ status, userId, roomId });
+    const bookings = await bookingService.getAllBookings({ status, userId, roomId });
 
-  res.status(200).json({
-    success: true,
-    count: bookings.length,
-    data: { bookings },
-  });
+    res.status(200).json({
+      success: true,
+      count: bookings.length,
+      data: { bookings },
+    });
+  } catch (err) {
+    next(err);
+  }
 });
 
 // ─── GET /api/bookings/my ─── current user's bookings ────────────────────────
-const getMyBookings = asyncHandler(async (req, res) => {
-  const { status } = req.query;
+const getMyBookings = asyncHandler(async (req, res, next) => {
+  try {
+    const { status } = req.query;
 
-  const bookings = await bookingService.getAllBookings({
-    userId: req.user._id,
-    status,
-  });
+    const bookings = await bookingService.getAllBookings({
+      userId: req.user._id,
+      status,
+    });
 
-  res.status(200).json({
-    success: true,
-    count: bookings.length,
-    data: { bookings },
-  });
+    res.status(200).json({
+      success: true,
+      count: bookings.length,
+      data: { bookings },
+    });
+  } catch (err) {
+    next(err);
+  }
 });
 
 // ─── GET /api/bookings/:id ─────────────────────────────────────────────────────
-const getBookingById = asyncHandler(async (req, res) => {
-  const booking = await bookingService.getBookingById(req.params.id);
+const getBookingById = asyncHandler(async (req, res, next) => {
+  try {
+    const booking = await bookingService.getBookingById(req.params.id);
 
-  // Guests may only view their own bookings; admins can view any
-  if (
-    req.user.role !== "admin" &&
-    booking.user._id.toString() !== req.user._id.toString()
-  ) {
-    return res.status(403).json({
-      success: false,
-      message: "Access denied. You can only view your own bookings.",
+    // Guests may only view their own bookings; admins can view any
+    if (
+      req.user.role !== "admin" &&
+      booking.user._id.toString() !== req.user._id.toString()
+    ) {
+      return res.status(403).json({
+        success: false,
+        message: "Access denied. You can only view your own bookings.",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: { booking },
     });
+  } catch (err) {
+    next(err);
   }
-
-  res.status(200).json({
-    success: true,
-    data: { booking },
-  });
 });
 
 // ─── PATCH /api/bookings/:id/cancel ──────────────────────────────────────────
-const cancelBooking = asyncHandler(async (req, res) => {
-  const booking = await bookingService.cancelBooking(
-    req.params.id,
-    req.user._id,
-    req.user.role
-  );
+const cancelBooking = asyncHandler(async (req, res, next) => {
+  try {
+    const booking = await bookingService.cancelBooking(
+      req.params.id,
+      req.user._id,
+      req.user.role
+    );
 
-  res.status(200).json({
-    success: true,
-    message: "Booking cancelled successfully.",
-    data: { booking },
-  });
+    res.status(200).json({
+      success: true,
+      message: "Booking cancelled successfully.",
+      data: { booking },
+    });
+  } catch (err) {
+    next(err);
+  }
 });
 
 // ─── PATCH /api/bookings/:id/complete ─── admin only ──────────────────────────
-const completeBooking = asyncHandler(async (req, res) => {
-  const booking = await bookingService.completeBooking(req.params.id);
+const completeBooking = asyncHandler(async (req, res, next) => {
+  try {
+    const booking = await bookingService.completeBooking(req.params.id);
 
-  res.status(200).json({
-    success: true,
-    message: "Booking marked as completed.",
-    data: { booking },
-  });
+    res.status(200).json({
+      success: true,
+      message: "Booking marked as completed.",
+      data: { booking },
+    });
+  } catch (err) {
+    next(err);
+  }
 });
 
 // ─── PATCH /api/bookings/:id/reschedule ──────────────────────────────────────

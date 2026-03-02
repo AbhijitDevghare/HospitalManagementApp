@@ -35,9 +35,9 @@ const staffSchema = new mongoose.Schema(
       type: String,
       required: [true, "Staff role is required"],
       enum: {
-        values: ["manager", "receptionist", "housekeeping"],
+        values: ["manager", "receptionist", "housekeeping","maintenance","security","chef","waiter","concierge","other"],
         message:
-          "Role must be 'manager', 'receptionist', or 'housekeeping'",
+          "Role must be 'manager', 'receptionist', 'housekeeping' 'maintenance' security chef waiter concierge",
       },
     },
 

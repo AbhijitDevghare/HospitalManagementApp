@@ -1,11 +1,5 @@
-// src/components/booking/BookingForm.jsx
-// ─────────────────────────────────────────────────────────────────────────────
-// Collects numberOfGuests (+ optional serviceCharges) and dispatches
-// createBooking. Surfaces the maintenanceGuard 403 error inline.
-// On success calls onSuccess(booking) so the parent can route to payment.
-// ─────────────────────────────────────────────────────────────────────────────
 import React, { useState, useEffect } from 'react';
-import { useDispatch, useSelector }   from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import {
   createBooking,
   selectBookingLoading,
@@ -13,12 +7,9 @@ import {
   clearBookingError,
 } from '../../store/slices/bookingSlice';
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
 const calcNights = (ci, co) =>
-  Math.max(0, Math.round((new Date(co) - new Date(ci)) / 86_400_000));
+  Math.max(0, Math.round((new Date(co) - new Date(ci)) / 86400000));
 
-// Classify the backend error string so we can render maintenance errors
-// with a distinct style vs generic validation errors.
 const classifyError = (msg = '') => {
   if (!msg) return { type: 'generic', text: '' };
   const lower = msg.toLowerCase();
@@ -29,21 +20,24 @@ const classifyError = (msg = '') => {
   return { type: 'generic', text: msg };
 };
 
-// ─────────────────────────────────────────────────────────────────────────────
 const BookingForm = ({ room, checkInDate, checkOutDate, onSuccess, onBack }) => {
-  const dispatch      = useDispatch();
-  const loading       = useSelector(selectBookingLoading);
-  const error         = useSelector(selectBookingError);
+  const dispatch = useDispatch();
+  const loading  = useSelector(selectBookingLoading);
+  const error    = useSelector(selectBookingError);
 
-  const [numberOfGuests,  setGuests]   = useState(1);
-  const [serviceCharges,  setSvc]      = useState(0);
-  const [submitted,       setSubmitted] = useState(false);
+  const [numberOfGuests, setGuests] = useState(1);
+  const [serviceCharges, setSvc] = useState(0);
+  const [submitted, setSubmitted] = useState(false);
 
   const nights    = calcNights(checkInDate, checkOutDate);
   const roomTotal = room.pricePerNight * nights;
-  const grandEst  = roomTotal + Number(serviceCharges || 0);
+  const svcTotal  = Number(serviceCharges || 0);
 
-  // Clear stale error on unmount
+  // ✅ GST calculation (12%)
+  const subtotal  = roomTotal + svcTotal;
+  const tax       = subtotal * 0.12;
+  const grandEst  = subtotal + tax;
+
   useEffect(() => () => dispatch(clearBookingError()), [dispatch]);
 
   const handleSubmit = async (e) => {
@@ -53,11 +47,12 @@ const BookingForm = ({ room, checkInDate, checkOutDate, onSuccess, onBack }) => 
 
     const result = await dispatch(
       createBooking({
-        roomId:         room._id ?? room.id,
+        roomId: room._id ?? room.id,
         checkInDate,
         checkOutDate,
         numberOfGuests: Number(numberOfGuests),
-        serviceCharges: Number(serviceCharges) || 0,
+        serviceCharges: svcTotal,
+        totalAmount: Number(grandEst.toFixed(2)), // ✅ send GST-inclusive total
       })
     );
 
@@ -68,9 +63,9 @@ const BookingForm = ({ room, checkInDate, checkOutDate, onSuccess, onBack }) => 
 
   const errInfo = classifyError(submitted ? error : '');
 
-  // ─────────────────────────────────────────────────────────────────────────
   return (
     <div className="booking-form">
+
       {onBack && (
         <button type="button" className="btn btn--ghost booking-form__back" onClick={onBack}>
           ← Back
@@ -79,123 +74,86 @@ const BookingForm = ({ room, checkInDate, checkOutDate, onSuccess, onBack }) => 
 
       <h2 className="booking-form__title">Complete Your Booking</h2>
 
-      {/* ── Room snapshot ─────────────────────────────────────────────── */}
       <div className="booking-form__room-snap">
         {room.images?.[0] && (
           <img src={room.images[0]} alt={`Room ${room.roomNumber}`} className="booking-form__room-img" />
         )}
         <div className="booking-form__room-info">
-          <h3>Room {room.roomNumber} <span className="badge badge--type">{room.roomType}</span></h3>
-          <p>{checkInDate} → {checkOutDate}
-            <span className="booking-form__nights"> ({nights} night{nights !== 1 ? 's' : ''})</span>
+          <h3>
+            Room {room.roomNumber}
+            <span className="badge badge--type">{room.roomType}</span>
+          </h3>
+          <p>
+            {checkInDate} → {checkOutDate}
+            <span> ({nights} night{nights !== 1 ? 's' : ''})</span>
           </p>
-          <p className="booking-form__rate">${room.pricePerNight}/night</p>
+          <p>${room.pricePerNight}/night</p>
         </div>
       </div>
 
-      {/* ── Error banners ─────────────────────────────────────────────── */}
-      {errInfo.type === 'maintenance' && (
-        <div className="alert alert--maintenance" role="alert">
-          <span className="alert__icon" aria-hidden="true">🔧</span>
-          <div>
-            <strong>Room Unavailable — Under Maintenance</strong>
-            <p>{errInfo.text}</p>
-            <p>Please select a different room or check back later.</p>
-          </div>
+      {errInfo.text && (
+        <div className="alert alert--error">
+          {errInfo.text}
         </div>
       )}
 
-      {errInfo.type === 'conflict' && (
-        <div className="alert alert--conflict" role="alert">
-          <span className="alert__icon" aria-hidden="true">📅</span>
-          <div>
-            <strong>Date Conflict</strong>
-            <p>{errInfo.text}</p>
-          </div>
-        </div>
-      )}
+      <form onSubmit={handleSubmit}>
 
-      {errInfo.type === 'generic' && errInfo.text && (
-        <div className="alert alert--error" role="alert">
-          <span className="alert__icon" aria-hidden="true">⚠️</span>
-          <p>{errInfo.text}</p>
-        </div>
-      )}
-
-      {/* ── Booking form ──────────────────────────────────────────────── */}
-      <form className="booking-form__fields" onSubmit={handleSubmit} noValidate>
-
-        {/* Number of guests */}
         <div className="form-group">
-          <label htmlFor="bf-guests">
-            Number of Guests
-            <span className="form-group__hint"> (max {room.maxOccupancy})</span>
-          </label>
+          <label>Number of Guests (max {room.maxOccupancy})</label>
           <input
-            id="bf-guests"
             type="number"
             min="1"
             max={room.maxOccupancy}
             value={numberOfGuests}
-            onChange={(e) => {
-              dispatch(clearBookingError());
-              setSubmitted(false);
-              setGuests(e.target.value);
-            }}
+            onChange={(e) => setGuests(e.target.value)}
             required
           />
-          {submitted && (Number(numberOfGuests) < 1 || Number(numberOfGuests) > room.maxOccupancy) && (
-            <span className="form-group__error-msg" role="alert">
-              Guests must be between 1 and {room.maxOccupancy}.
-            </span>
-          )}
         </div>
 
-        {/* Service charges */}
         <div className="form-group">
-          <label htmlFor="bf-svc">
-            Extra Service Charges ($)
-            <small> — laundry, parking, etc. (optional)</small>
-          </label>
+          <label>Extra Service Charges ($)</label>
           <input
-            id="bf-svc"
             type="number"
             min="0"
             value={serviceCharges}
-            onChange={(e) => {
-              dispatch(clearBookingError());
-              setSvc(e.target.value);
-            }}
+            onChange={(e) => setSvc(e.target.value)}
             placeholder="0"
           />
         </div>
 
-        {/* Cost estimate */}
+        {/* ✅ Updated Cost Breakdown */}
         <div className="booking-form__estimate">
           <span>Room ({nights} nights)</span>
           <span>${roomTotal.toFixed(2)}</span>
-          {Number(serviceCharges) > 0 && (
+
+          {svcTotal > 0 && (
             <>
               <span>Service charges</span>
-              <span>${Number(serviceCharges).toFixed(2)}</span>
+              <span>${svcTotal.toFixed(2)}</span>
             </>
           )}
-          <span className="booking-form__estimate-total">Estimated Total (excl. tax)</span>
-          <span className="booking-form__estimate-total">${grandEst.toFixed(2)}</span>
+
+          <span>Subtotal</span>
+          <span>${subtotal.toFixed(2)}</span>
+
+          <span>GST (12%)</span>
+          <span>${tax.toFixed(2)}</span>
+
+          <span className="booking-form__estimate-total">Total (incl. GST)</span>
+          <span className="booking-form__estimate-total">
+            ${grandEst.toFixed(2)}
+          </span>
         </div>
 
         <button
           type="submit"
           className="btn btn--primary btn--full"
           disabled={loading || nights < 1}
-          aria-busy={loading}
         >
-          {loading ? (
-            <><span className="hms-spinner hms-spinner--sm" aria-hidden="true" /> Creating Booking…</>
-          ) : (
-            'Confirm & Proceed to Payment'
-          )}
+          {loading ? 'Creating Booking…' : 'Confirm & Proceed to Payment'}
         </button>
+
       </form>
     </div>
   );

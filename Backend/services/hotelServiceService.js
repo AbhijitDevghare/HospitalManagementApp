@@ -113,10 +113,10 @@ const deleteService = async (serviceId) => {
   }
   return { message: `Service "${service.serviceName}" deleted successfully` };
 };
-
 // ─── 7. Attach services to a booking ─────────────────────────────────────────
 const attachServicesToBooking = async (bookingId, serviceIds) => {
   const booking = await Booking.findById(bookingId);
+
   if (!booking) {
     const error = new Error("Booking not found");
     error.statusCode = 404;
@@ -130,15 +130,29 @@ const attachServicesToBooking = async (bookingId, serviceIds) => {
     error.statusCode = 400;
     throw error;
   }
-  // Fetch and validate all requested services
+
+  // 🔎 Remove already attached services
+  const alreadyAttached = (booking.services || []).map(id => id.toString());
+
+  const newServiceIds = serviceIds.filter(
+    id => !alreadyAttached.includes(id.toString())
+  );
+
+  if (newServiceIds.length === 0) {
+    const error = new Error("All selected services are already attached");
+    error.statusCode = 400;
+    throw error;
+  }
+
+  // Fetch and validate only new services
   const services = await Service.find({
-    _id: { $in: serviceIds },
+    _id: { $in: newServiceIds },
     isAvailable: true,
   });
 
-  if (services.length !== serviceIds.length) {
-    const foundIds    = services.map((s) => s._id.toString());
-    const missingIds  = serviceIds.filter((id) => !foundIds.includes(id));
+  if (services.length !== newServiceIds.length) {
+    const foundIds   = services.map((s) => s._id.toString());
+    const missingIds = newServiceIds.filter(id => !foundIds.includes(id));
     const error = new Error(
       `Some services are unavailable or not found: ${missingIds.join(", ")}`
     );
@@ -149,40 +163,45 @@ const attachServicesToBooking = async (bookingId, serviceIds) => {
   // Calculate total additional service charges
   const additionalCharges = calculateServiceTotal(services);
 
-  // Update booking total
-  booking.totalAmount = parseFloat(
-    (booking.totalAmount + additionalCharges).toFixed(2)
+  // ✅ Update booking safely (no validation re-trigger)
+  const updatedBooking = await Booking.findByIdAndUpdate(
+    bookingId,
+    {
+      $inc: { totalAmount: additionalCharges },
+      $addToSet: { services: { $each: newServiceIds } }
+    },
+    { new: true }
   );
-  await booking.save();
 
-  // Reflect service charges in existing invoice if present
+  // Update invoice if exists
   const existingInvoice = await Invoice.findOne({ booking: bookingId });
+
   if (existingInvoice) {
-    existingInvoice.serviceCharges = parseFloat(
-      (existingInvoice.serviceCharges + additionalCharges).toFixed(2)
-    );
-    existingInvoice.taxes = parseFloat(
-      (
-        (existingInvoice.roomCharges + existingInvoice.serviceCharges) * 0.12
-      ).toFixed(2)
-    );
-    existingInvoice.totalBill = parseFloat(
-      (
-        existingInvoice.roomCharges +
-        existingInvoice.serviceCharges +
-        existingInvoice.taxes
-      ).toFixed(2)
-    );
-    await existingInvoice.save();
+    const updatedServiceCharges =
+      existingInvoice.serviceCharges + additionalCharges;
+
+    const updatedTaxes =
+      (existingInvoice.roomCharges + updatedServiceCharges) * 0.12;
+
+    const updatedTotalBill =
+      existingInvoice.roomCharges +
+      updatedServiceCharges +
+      updatedTaxes;
+
+    await Invoice.findByIdAndUpdate(existingInvoice._id, {
+      serviceCharges: parseFloat(updatedServiceCharges.toFixed(2)),
+      taxes: parseFloat(updatedTaxes.toFixed(2)),
+      totalBill: parseFloat(updatedTotalBill.toFixed(2)),
+      isPaid:false
+    });
   }
 
   return {
-    booking,
+    booking: updatedBooking,
     attachedServices: services,
     additionalCharges,
   };
 };
-
 // ─── 8. Calculate total cost of a service list ───────────────────────────────
 const calculateServiceTotal = (services) => {
   return parseFloat(

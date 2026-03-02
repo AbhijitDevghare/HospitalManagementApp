@@ -1,5 +1,6 @@
 const Booking = require("../models/Booking");
 const Room = require("../models/Room");
+const Payment = require("../models/Payment")
 
 // ─── Constants ─────────────────────────────────────────────────────────────────
 const MS_PER_DAY = 1000 * 60 * 60 * 24;
@@ -11,13 +12,18 @@ const calculateNights = (checkInDate, checkOutDate) => {
 };
 
 // ─── Helper: Calculate total booking cost ─────────────────────────────────────
+// ─── Helper: Calculate total booking cost (WITH 12% GST) ────────────────────
 const calculateTotalCost = (pricePerNight, nights, serviceCharges = 0) => {
   if (nights <= 0) {
     const error = new Error("Check-out date must be after check-in date");
     error.statusCode = 400;
     throw error;
   }
-  return parseFloat((pricePerNight * nights + serviceCharges).toFixed(2));
+
+  const subtotal = pricePerNight * nights + serviceCharges;
+  const tax = subtotal * 0.12; // 12% GST
+
+  return parseFloat((subtotal + tax).toFixed(2));
 };
 
 // ─── Helper: Check for overlapping bookings ────────────────────────────────────
@@ -94,23 +100,57 @@ const createBooking = async ({ userId, roomId, checkInDate, checkOutDate, number
 const getAllBookings = async (filters = {}) => {
   const query = {};
 
-  if (filters.status)  query.status  = filters.status;
-  if (filters.userId)  query.user    = filters.userId;
-  if (filters.roomId)  query.room    = filters.roomId;
+  if (filters.status) query.status = filters.status;
+  if (filters.userId) query.user   = filters.userId;
+  if (filters.roomId) query.room   = filters.roomId;
 
   const bookings = await Booking.find(query)
     .populate("user", "name email phone")
     .populate("room", "roomNumber roomType pricePerNight")
-    .sort({ createdAt: -1 });
+    .sort({ createdAt: -1 })
+    .lean();
 
-  return bookings;
+  const bookingIds = bookings.map(b => b._id);
+
+  // 🔥 Get ALL successful payments for these bookings
+  const payments = await Payment.find({
+    booking: { $in: bookingIds },
+    paymentStatus: "success",
+  });
+
+  // Group payments by booking
+  const paymentMap = {};
+
+  payments.forEach(p => {
+    const key = p.booking.toString();
+    if (!paymentMap[key]) paymentMap[key] = 0;
+    paymentMap[key] += p.paymentAmount;
+  });
+
+  const bookingsWithPayment = bookings.map(b => {
+    const paidAmount = paymentMap[b._id.toString()] || 0;
+    const remainingAmount = Math.max(
+      0,
+      b.totalAmount - paidAmount
+    );
+
+    return {
+      ...b,
+      paidAmount,
+      remainingAmount,
+      paymentStatus:
+        remainingAmount === 0 ? "paid" : "pending",
+    };
+  });
+
+  return bookingsWithPayment;
 };
-
 // ─── 3. Get a single booking by ID ────────────────────────────────────────────
 const getBookingById = async (bookingId) => {
   const booking = await Booking.findById(bookingId)
     .populate("user", "name email phone")
-    .populate("room", "roomNumber roomType pricePerNight amenities");
+    .populate("room", "roomNumber roomType pricePerNight amenities")
+    .lean();
 
   if (!booking) {
     const error = new Error("Booking not found");
@@ -118,7 +158,28 @@ const getBookingById = async (bookingId) => {
     throw error;
   }
 
-  return booking;
+  // 🔥 Get ALL successful payments
+  const payments = await Payment.find({
+    booking: bookingId,
+    paymentStatus: "success",
+  });
+
+  const paidAmount = payments.reduce(
+    (sum, p) => sum + p.paymentAmount,
+    0
+  );
+
+  const remainingAmount = Math.max(
+    0,
+    booking.totalAmount - paidAmount
+  );
+
+  return {
+    ...booking,
+    paidAmount,
+    remainingAmount,
+    paymentStatus: remainingAmount === 0 ? "success" : "pending",
+  };
 };
 
 // ─── 4. Cancel a booking ──────────────────────────────────────────────────────

@@ -126,7 +126,7 @@ const attachServicesToBooking = asyncHandler(async (req, res, next) => {
       },
     });
   } catch (err) {
-    console.log(err.message)
+    console.log(err)
     next(err);
   }
 });

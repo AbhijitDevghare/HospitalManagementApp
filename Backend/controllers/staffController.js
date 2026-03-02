@@ -2,114 +2,152 @@ const staffService = require("../services/staffService");
 const asyncHandler = require("../middleware/asyncHandler");
 
 // ─── POST /api/staff ─── admin only ───────────────────────────────────────────
-const addStaff = asyncHandler(async (req, res) => {
-  const staff = await staffService.addStaff(req.body);
+const addStaff = asyncHandler(async (req, res, next) => {
+  try {
+    const staff = await staffService.addStaff(req.body);
 
-  res.status(201).json({
-    success: true,
-    message: "Staff member added successfully.",
-    data: { staff },
-  });
+    res.status(201).json({
+      success: true,
+      message: "Staff member added successfully.",
+      data: { staff },
+    });
+  } catch (err) {
+    next(err);
+  }
 });
 
+
+
 // ─── GET /api/staff ─── admin only ────────────────────────────────────────────
-const getAllStaff = asyncHandler(async (req, res) => {
-  const { role, isActive } = req.query;
+const getAllStaff = asyncHandler(async (req, res, next) => {
+  try {
+    const { role, isActive } = req.query;
 
-  const staffList = await staffService.getAllStaff({ role, isActive });
+    const staffList = await staffService.getAllStaff({ role, isActive });
 
-  res.status(200).json({
-    success: true,
-    count: staffList.length,
-    data: { staff: staffList },
-  });
+    res.status(200).json({
+      success: true,
+      count: staffList.length,
+      data: { staff: staffList },
+    });
+  } catch (err) {
+    next(err);
+  }
 });
 
 // ─── GET /api/staff/salary-summary ─── admin only ────────────────────────────
-const getSalarySummaryByRole = asyncHandler(async (req, res) => {
-  const summary = await staffService.getSalarySummaryByRole();
+const getSalarySummaryByRole = asyncHandler(async (req, res, next) => {
+  try {
+    const summary = await staffService.getSalarySummaryByRole();
 
-  res.status(200).json({
-    success: true,
-    count: summary.length,
-    data: { summary },
-  });
+    res.status(200).json({
+      success: true,
+      count: summary.length,
+      data: { summary },
+    });
+  } catch (err) {
+    next(err);
+  }
 });
 
 // ─── GET /api/staff/:id ────────────────────────────────────────────────────────
-const getStaffById = asyncHandler(async (req, res) => {
-  const staff = await staffService.getStaffById(req.params.id);
+const getStaffById = asyncHandler(async (req, res, next) => {
+  try {
+    const staff = await staffService.getStaffById(req.params.id);
 
-  res.status(200).json({
-    success: true,
-    data: { staff },
-  });
+    res.status(200).json({
+      success: true,
+      data: { staff },
+    });
+  } catch (err) {
+    next(err);
+  }
 });
 
 // ─── PUT /api/staff/:id ─── admin only ────────────────────────────────────────
-const updateStaff = asyncHandler(async (req, res) => {
-  const staff = await staffService.updateStaff(req.params.id, req.body);
+const updateStaff = asyncHandler(async (req, res, next) => {
+  try {
+    const staff = await staffService.updateStaff(req.params.id, req.body);
 
-  res.status(200).json({
-    success: true,
-    message: "Staff details updated successfully.",
-    data: { staff },
-  });
+    res.status(200).json({
+      success: true,
+      message: "Staff details updated successfully.",
+      data: { staff },
+    });
+  } catch (err) {
+    next(err);
+  }
 });
 
 // ─── PATCH /api/staff/:id/shift ─── admin only ───────────────────────────────
-const updateShiftTiming = asyncHandler(async (req, res) => {
-  const { startTime, endTime } = req.body;
+const updateShiftTiming = asyncHandler(async (req, res, next) => {
+  try {
+    const { startTime, endTime } = req.body;
 
-  if (!startTime || !endTime) {
-    return res.status(400).json({
-      success: false,
-      message: "Both startTime and endTime are required (HH:MM 24-hour format).",
+    if (!startTime || !endTime) {
+      return res.status(400).json({
+        success: false,
+        message: "Both startTime and endTime are required (HH:MM 24-hour format).",
+      });
+    }
+
+    const staff = await staffService.updateShiftTiming(req.params.id, {
+      startTime,
+      endTime,
     });
+
+    res.status(200).json({
+      success: true,
+      message: `Shift timing updated to ${startTime} – ${endTime}.`,
+      data: { staff },
+    });
+  } catch (err) {
+    next(err);
   }
-
-  const staff = await staffService.updateShiftTiming(req.params.id, {
-    startTime,
-    endTime,
-  });
-
-  res.status(200).json({
-    success: true,
-    message: `Shift timing updated to ${startTime} – ${endTime}.`,
-    data: { staff },
-  });
 });
 
 // ─── PATCH /api/staff/:id/deactivate ─── admin only ──────────────────────────
-const deactivateStaff = asyncHandler(async (req, res) => {
-  const result = await staffService.deactivateStaff(req.params.id);
+const deactivateStaff = asyncHandler(async (req, res, next) => {
+  try {
+    const result = await staffService.deactivateStaff(req.params.id);
 
-  res.status(200).json({
-    success: true,
-    message: result.message,
-    data: { staff: result.staff },
-  });
+    res.status(200).json({
+      success: true,
+      message: result.message,
+      data: { staff: result.staff },
+    });
+  } catch (err) {
+    next(err);
+  }
 });
 
 // ─── PATCH /api/staff/:id/reactivate ─── admin only ──────────────────────────
-const reactivateStaff = asyncHandler(async (req, res) => {
-  const result = await staffService.reactivateStaff(req.params.id);
+const reactivateStaff = asyncHandler(async (req, res, next) => {
+  try {
+    const result = await staffService.reactivateStaff(req.params.id);
 
-  res.status(200).json({
-    success: true,
-    message: result.message,
-    data: { staff: result.staff },
-  });
+    res.status(200).json({
+      success: true,
+      message: result.message,
+      data: { staff: result.staff },
+    });
+  } catch (err) {
+    next(err);
+  }
 });
 
 // ─── DELETE /api/staff/:id ─── admin only ─────────────────────────────────────
-const deleteStaff = asyncHandler(async (req, res) => {
-  const result = await staffService.deleteStaff(req.params.id);
+const deleteStaff = asyncHandler(async (req, res, next) => {
+  try {
+    const result = await staffService.deleteStaff(req.params.id);
 
-  res.status(200).json({
-    success: true,
-    message: result.message,
-  });
+    res.status(200).json({
+      success: true,
+      message: result.message,
+    });
+  } catch (err) {
+    next(err);
+  }
 });
 
 module.exports = {

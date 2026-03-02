@@ -110,8 +110,12 @@ const PaymentPage = () => {
   }, [currentPayment, submitted, booking, navigate]);
 
   if (!booking) return null;
-
-  const total     = booking.totalAmount ?? booking.totalBill ?? 0;
+    const total =
+      location.state?.amountDue ??
+      booking.totalBill ??
+      booking.totalAmount ??
+      0;
+      
   const bookingId = booking._id ?? booking.id;
   const status    = booking.status ?? booking.bookingStatus ?? 'pending';
 

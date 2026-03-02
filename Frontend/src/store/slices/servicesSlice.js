@@ -74,7 +74,7 @@ export const attachServicesToBooking = createAsyncThunk(
   'services/attachToBooking',
   async ({ bookingId, serviceIds }, { rejectWithValue }) => {
     try {
-      console.log("SERVICE S ATTAHE",serviceIds)
+      // console.log("SERVICE S ATTAHE",serviceIds)
       const response = await axiosInstance.post(
         `services/attach`,
         { bookingId,serviceIds }

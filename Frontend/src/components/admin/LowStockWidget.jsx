@@ -51,7 +51,7 @@ const LowStockWidget = () => {
     const qty = Number(restockQty[itemId]);
     if (!qty || qty <= 0) return;
     setRestockingId(itemId);
-    await dispatch(updateStock({ id: itemId, quantityChange: qty }));
+    await dispatch(updateStock({ id: itemId,operation:"add", quantity:qty}));
     setRestockingId(null);
     setRestockQty((prev) => ({ ...prev, [itemId]: '' }));
   };

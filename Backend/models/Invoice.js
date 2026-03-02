@@ -32,7 +32,7 @@ const invoiceSchema = new mongoose.Schema(
       type: Number,
       required: [true, "Total bill is required"],
       min: [0, "Total bill cannot be negative"],
-      validate: {
+      validate: { 
         validator: function (value) {
           // totalBill must equal the sum of all charges and taxes
           const expected = this.roomCharges + this.serviceCharges + this.taxes;

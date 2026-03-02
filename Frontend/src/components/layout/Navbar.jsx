@@ -24,7 +24,7 @@ const ADMIN_LINKS = [
   { to: '/admin/maintenance',  label: '🔧 Maintenance' },
   { to: '/admin/services',     label: '🛎️ Services'    },
   { to: '/admin/bookings/new', label: '📋 New Booking' },
-  { to: '/bookings',           label: '📑 Bookings'    },
+  { to: '/admin/bookings',           label: '📑 Bookings'    },
 ];
 
 const GUEST_LINKS = [

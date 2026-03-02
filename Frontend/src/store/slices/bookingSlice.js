@@ -386,5 +386,6 @@ export const selectMyBookings     = (state) => state.bookings.myBookings;
 export const selectCurrentBooking = (state) => state.bookings.currentBooking;
 export const selectBookingLoading = (state) => state.bookings.loading;
 export const selectBookingError   = (state) => state.bookings.error;
+export const selectAllBookings    = (state) => state.bookings.allBookings ?? state.bookings.bookings ?? [];
 
 export default bookingSlice.reducer;

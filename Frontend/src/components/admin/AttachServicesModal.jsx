@@ -85,10 +85,10 @@ const AttachServicesModal = ({ booking, availableServices, onClose, onSuccess })
               </span>
               <span className="asm-booking-info__sep">·</span>
               <span className="asm-booking-info__guest">{booking.guestName ?? booking.user?.name ?? 'Guest'}</span>
-              {booking.roomNumber && (
+              {booking.room.roomNumber && (
                 <>
                   <span className="asm-booking-info__sep">·</span>
-                  <span className="asm-booking-info__room">Room {booking.roomNumber}</span>
+                  <span className="asm-booking-info__room">Room {booking.room.roomNumber}</span>
                 </>
               )}
             </div>
@@ -116,7 +116,7 @@ const AttachServicesModal = ({ booking, availableServices, onClose, onSuccess })
                           {selected ? '✓' : ''}
                         </span>
                       </div>
-                      <p className="asm-service-card__name">{svc.name}</p>
+                      <p className="asm-service-card__name">{svc.serviceName}</p>
                       <p className="asm-service-card__price">{fmt(svc.price)}</p>
                       {svc.duration && (
                         <p className="asm-service-card__meta">{svc.duration}</p>

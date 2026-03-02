@@ -27,11 +27,13 @@ import { useDispatch, useSelector }         from 'react-redux';
 import { getMe, selectIsAuthenticated }     from './store/slices/authSlice';
 import { ProtectedRoute, AdminRoute }       from './components/routes';
 import Navbar                               from './components/layout/Navbar';
+import { Toaster }                         from 'react-hot-toast';
 
 // ── Eagerly loaded (small, always needed) ─────────────────────────────────────
 import LoginPage        from './pages/LoginPage';
 import RegisterPage     from './pages/RegisterPage';
 import UnauthorizedPage from './pages/UnauthorizedPage';
+import AdminBookingsPage from './pages/AdminBookingsPage';
 
 // ── Lazy-loaded (code-split) ──────────────────────────────────────────────────
 const BookingPage          = lazy(() => import('./pages/BookingPage'));
@@ -124,6 +126,7 @@ const App = () => {
           <Route path="/admin/services"     element={<ServicesManagementPage />} />
           <Route path="/admin/bookings/new" element={<AdminBookingFormPage />} />
           <Route path="/admin/invoices"     element={<AdminInvoicePage />} />
+          <Route path="/admin/bookings" element={<AdminBookingsPage />} />
         </Route>
 
         {/* ── Default / catch-all ──────────────────────────────────────── */}
@@ -135,6 +138,15 @@ const App = () => {
 
         </Routes>
       </div>
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          duration: 3500,
+          style: { fontSize: '0.875rem', fontFamily: "'Segoe UI', sans-serif" },
+          success: { iconTheme: { primary: '#6366f1', secondary: '#fff' } },
+          error:   { iconTheme: { primary: '#ef4444', secondary: '#fff' } },
+        }}
+      />
     </Suspense>
   );
 };

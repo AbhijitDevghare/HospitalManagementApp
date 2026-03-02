@@ -4,15 +4,19 @@ const { body, query, param, validationResult } = require("express-validator");
 const validate = (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
+    // Join all messages into one string (e.g., "Email is required. Password is too short.")
+    const combinedMessage = errors
+      .array()
+      .map((err) => err.msg)
+      .join(" ");
+
     return res.status(422).json({
       success: false,
-      message: "Validation failed.",
-      errors: errors.array().map((e) => ({ field: e.path, message: e.msg })),
+      message: combinedMessage, // The frontend just displays this string
     });
   }
   next();
 };
-
 
 
 // ─── 1. User registration ─────────────────────────────────────────────────────
